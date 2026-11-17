@@ -1,0 +1,19 @@
+# Statements, workbooks and exports never go in git. The only PDFs allowed are the synthetic
+# test statements made by tests/make_fixtures.py.
+*.pdf
+*.xlsx
+*.csv
+!tests/fixtures/synthetic/*.pdf
+!tests/fixtures/synthetic/*.xlsx
+!tests/fixtures/synthetic/*.csv
+
+# Real statements for a manual check stay on your own machine.
+tests/private/
+
+# Test output and tools
+tests/output/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

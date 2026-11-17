@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M-Pesa Statement to Excel</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --accent: #1f5c3a; --accent-hover: #174a2e; --accent-soft: #e8f1eb;
+    --bg: #f5f6f4; --surface: #ffffff; --text: #14201a; --muted: #4a5850; --line: #dbe2dc;
+    --in: #15803d; --out: #b42318; --warn-bg: #fdf1ef; --ok-bg: #ecf6ef;
+    --r-lg: 14px; --r-md: 10px; --r-sm: 6px;
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+    --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: var(--s7) var(--s5) var(--s7); }
+  h1 { font-size: clamp(26px, 3.6vw, 36px); line-height: 1.15; margin: 0 0 var(--s3); letter-spacing: -0.02em; text-wrap: balance; max-width: 20ch; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0 0 var(--s6); text-wrap: pretty; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s5); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* upload */
+  .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s2);
+    min-height: 200px; border: 2px dashed #b9c7bd; border-radius: var(--r-md); background: #fbfcfb; cursor: pointer;
+    text-align: center; padding: var(--s5); transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop:focus-within { outline: 3px solid #9cc7ac; outline-offset: 2px; }
+  .drop svg { color: var(--accent); }
+  .drop strong { font-size: 18px; }
+  .drop span { color: var(--muted); font-size: 14px; }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .row { display: flex; gap: var(--s4); flex-wrap: wrap; align-items: flex-end; margin-top: var(--s4); }
+  .field { display: flex; flex-direction: column; gap: var(--s1); flex: 1 1 280px; }
+  .field label { font-weight: 600; font-size: 14px; }
+  .field small { color: var(--muted); font-size: 13px; }
+  .pw { display: flex; border: 1px solid var(--line); border-radius: var(--r-sm); background: #fff; overflow: hidden; }
+  .pw input { flex: 1; border: 0; padding: 10px 12px; font: inherit; min-width: 0; }
+  .pw input:focus { outline: none; }
+  .pw:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px #d3e6da; }
+  .pw button { border: 0; background: transparent; color: var(--muted); padding: 0 var(--s3); font: inherit; font-size: 13px; cursor: pointer; }
+
+  /* files */
+  .files { list-style: none; padding: 0; margin: var(--s4) 0 0; display: flex; flex-direction: column; gap: var(--s2); }
+  .file { display: grid; grid-template-columns: 20px 1fr auto; gap: var(--s3); align-items: center; padding: var(--s3) var(--s4);
+    border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; }
+  .file .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file .msg { color: var(--muted); font-size: 13px; }
+  .file.err { border-color: #f0c4be; background: var(--warn-bg); }
+  .file.err .msg { color: var(--out); }
+  .file .retry { display: flex; gap: var(--s2); margin-top: var(--s2); }
+  .file .retry input { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 10px; font: inherit; font-size: 14px; width: 200px; }
+  .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px 6px; border-radius: var(--r-sm); }
+  .x:hover { background: #eef1ee; color: var(--text); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #c4cdc6; justify-self: center; }
+  .dot.ok { background: var(--in); } .dot.err { background: var(--out); }
+  .spin { width: 16px; height: 16px; border: 2px solid #cfe0d4; border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; gap: var(--s2); border-radius: var(--r-sm); padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--text); }
+  .btn:hover { background: #f1f4f1; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; padding: 12px 22px; font-size: 16px; }
+  .btn.primary:hover { background: var(--accent-hover); }
+  .btn:disabled { opacity: .55; cursor: progress; }
+  .btn.small { padding: 6px 12px; font-size: 14px; }
+
+  /* results */
+  #results { margin-top: var(--s6); display: none; }
+  .res-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s4); flex-wrap: wrap; margin-bottom: var(--s4); }
+  .res-head h2 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
+  .res-head p { margin: var(--s1) 0 0; color: var(--muted); }
+  .actions { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: var(--s4) var(--s5); padding: var(--s5); }
+  .kpi .k { color: var(--muted); font-size: 13px; }
+  .kpi .v { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .kpi.big .v { font-size: 26px; }
+  .v.in { color: var(--in); } .v.out { color: var(--out); }
+  .checks { display: flex; flex-direction: column; gap: var(--s2); margin: var(--s4) 0; }
+  .check { padding: var(--s3) var(--s4); border-radius: var(--r-md); font-size: 14px; }
+  .check.ok { background: var(--ok-bg); color: #14532d; }
+  .check.bad { background: var(--warn-bg); color: #7a1d14; }
+  .check b { font-weight: 700; }
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); margin-top: var(--s4); }
+  #types { max-width: 720px; }
+  .card { min-width: 0; }
+  h3 { margin: 0 0 var(--s3); font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-weight: 600; color: var(--muted); padding: var(--s2); border-bottom: 1px solid var(--line); white-space: nowrap; position: sticky; top: 0; background: #fff; }
+  td { padding: 7px var(--s2); border-bottom: 1px solid #eef1ee; vertical-align: top; }
+  td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.in { color: var(--in); } td.out { color: var(--out); }
+  td.mono { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  td.when { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tr.bad td { background: var(--warn-bg); }
+  .tablebox { max-height: 560px; overflow: auto; border-radius: var(--r-sm); }
+  .filters { display: flex; gap: var(--s2); flex-wrap: wrap; margin-bottom: var(--s3); align-items: center; }
+  .filters input, .filters select { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 7px 10px; font: inherit; font-size: 14px; background: #fff; }
+  .filters input { flex: 1 1 200px; }
+  .count { color: var(--muted); font-size: 13px; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 99px; background: #eef2ef; font-size: 12px; white-space: nowrap; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--text); color: #fff; padding: 10px 16px;
+    border-radius: var(--r-md); font-size: 14px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 10; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 520px) { .wrap { padding: var(--s6) var(--s4); } .card { padding: var(--s4); } .kpi .v, .kpi.big .v { font-size: 19px; } }
+  .nw { white-space: nowrap; }
+  footer { margin-top: var(--s7); color: var(--muted); font-size: 13px; display: grid; gap: var(--s2); max-width: 75ch; }
+  footer b { color: var(--text); }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Turn M-Pesa PDF statements into Excel</h1>
+  <p class="lede">Drop in one or more Safaricom M-Pesa statements. You get a formatted workbook with every transaction, who it went to, monthly totals, charges, Fuliza and a running-balance check. The PDF is read inside this browser and never uploaded.</p>
+
+  <section class="card" aria-label="Upload statements">
+    <label class="drop" id="drop">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 18v-6"/><path d="m9.5 14.5 2.5-2.5 2.5 2.5"/></svg>
+      <strong>Drop M-Pesa statement PDFs here</strong>
+      <span>or click to choose files. Several statements are merged and duplicates removed.</span>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple>
+    </label>
+    <div class="row">
+      <div class="field">
+        <label for="pw">Statement password</label>
+        <div class="pw">
+          <input id="pw" type="password" autocomplete="off" inputmode="numeric" placeholder="Usually the ID number used to register the line">
+          <button type="button" id="pwToggle" aria-label="Show password">Show</button>
+        </div>
+        <small>Only used to open the PDF here. Leave blank if the file isn't locked.</small>
+      </div>
+    </div>
+    <ul class="files" id="files"></ul>
+  </section>
+
+  <section id="results" aria-live="polite">
+    <div class="res-head">
+      <div>
+        <h2 id="resTitle">Statement</h2>
+        <p id="resSub"></p>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="dlXlsx">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Download Excel
+        </button>
+        <button class="btn" id="dlCsv">CSV</button>
+      </div>
+    </div>
+
+    <div class="card kpis" id="kpis"></div>
+    <div class="checks" id="checks"></div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>By type</h3>
+        <table id="types"><thead><tr><th>Type</th><th class="r">Count</th><th class="r">Out</th><th class="r">In</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Transactions</h3>
+        <div class="filters">
+          <input id="q" type="search" placeholder="Search details, name, number or receipt">
+          <select id="typeFilter"><option value="">All types</option></select>
+          <span class="count" id="count"></span>
+        </div>
+        <div class="tablebox">
+          <table id="tx">
+            <thead><tr><th>Date</th><th>Receipt</th><th>Details</th><th class="r">In</th><th class="r">Out</th><th class="r">Balance</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div><b>Private by design.</b> Files are read with pdf.js inside this page. Nothing is sent to a server, and nothing is stored after you close the tab.</div>
+    <div><b>Works with</b> Safaricom M-Pesa customer statements downloaded as PDF from the M-Pesa app or USSD (*334#). Scanned or photographed statements have no text layer and can't be read.</div>
+    <div><b>How it checks itself:</b> every row's balance must equal the previous balance plus money in minus money out. Rows that don't follow are flagged in the workbook, and totals are compared with the statement's own summary.</div>
+  </footer>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="lib/pdf.min.js"></script>
+<script src="lib/exceljs.min.js"></script>
+<script src="lib/parser.js"></script>
+<script src="lib/excel.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "lib/pdf.worker.min.js";
+
+  const state = { files: [], rows: [], summary: null };
+  let seq = 0;
+  const KES = (v) => (v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- downloads: platform capability when hosted, plain link otherwise ----------
+  let downloads = null;
+  (async () => { try { if (window.claude && typeof window.claude.use === "function") downloads = await window.claude.use("downloads"); } catch (e) { downloads = null; } })();
+  async function saveFile(filename, blob) {
+    if (downloads) {
+      try { await downloads.save({ filename, data: blob }); toast("Saved " + filename); return; }
+      catch (e) {
+        if (e && e.code === "declined") return;
+        if (e && e.code === "rate_limited") { toast("A save is already waiting for your confirmation"); return; }
+      }
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+  let toastTimer;
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // ---------- reading PDFs ----------
+  async function extractPages(buf, password, onPage) {
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)), password: password || undefined, isEvalSupported: false }).promise;
+    const pages = [];
+    let chars = 0;
+    for (let i = 1; i <= pdf.numPages; i++) {
+      onPage && onPage(i, pdf.numPages);
+      const tc = await (await pdf.getPage(i)).getTextContent();
+      pages.push(tc.items.map((it) => {
+        chars += it.str.length;
+        return { str: it.str, x: it.transform[4], y: it.transform[5], w: it.width, h: it.height || Math.hypot(it.transform[2], it.transform[3]) };
+      }));
+    }
+    pdf.destroy();
+    if (chars < 20) throw Object.assign(new Error("This PDF has no readable text (it looks scanned). Download the statement again from the M-Pesa app."), { user: true });
+    return pages;
+  }
+
+  async function processFile(f, password) {
+    f.status = "busy"; f.msg = "Opening"; renderFiles();
+    try {
+      const pages = await extractPages(f.buf, password, (i, n) => { f.msg = `Reading page ${i} of ${n}`; renderFiles(); });
+      const doc = MpesaParser.parseDocument(pages, f.name);
+      if (!doc.rows.length) throw Object.assign(new Error("No transactions found. Is this an M-Pesa statement?"), { user: true });
+      f.doc = doc; f.status = "ok";
+      const from = new Date(doc.rows[0].ts).toISOString().slice(0, 10), to = new Date(doc.rows[doc.rows.length - 1].ts).toISOString().slice(0, 10);
+      f.msg = `${doc.rows.length.toLocaleString()} transactions, ${from} to ${to}`;
+    } catch (e) {
+      f.doc = null; f.status = "err";
+      if (e && e.name === "PasswordException") {
+        f.needsPw = true;
+        f.msg = e.code === 2 ? "Wrong password. Try again." : "This file is password-protected. Enter its password.";
+      } else {
+        f.needsPw = false;
+        f.msg = e && e.user ? e.message : "Couldn't read this file" + (e && e.message ? `: ${e.message}` : ".");
+        if (!(e && e.user)) console.error(e);
+      }
+    }
+    renderFiles();
+    recompute();
+  }
+
+  async function addFiles(list) {
+    const pdfs = [...list].filter((f) => /\.pdf$/i.test(f.name) || f.type === "application/pdf");
+    if (!pdfs.length) { toast("Choose a PDF statement"); return; }
+    for (const file of pdfs) {
+      const f = { id: ++seq, name: file.name, buf: await file.arrayBuffer(), status: "busy", msg: "Queued" };
+      state.files.push(f);
+    }
+    renderFiles();
+    for (const f of state.files.filter((x) => x.status === "busy" && x.msg === "Queued")) await processFile(f, $("#pw").value.trim());
+  }
+
+  function renderFiles() {
+    const ul = $("#files");
+    ul.innerHTML = state.files.map((f) => `
+      <li class="file ${f.status === "err" ? "err" : ""}" data-id="${f.id}">
+        ${f.status === "busy" ? '<div class="spin" aria-label="Working"></div>' : `<div class="dot ${f.status}"></div>`}
+        <div>
+          <div class="name">${esc(f.name)}</div>
+          <div class="msg">${esc(f.msg || "")}</div>
+          ${f.status === "err" && f.needsPw ? `<form class="retry"><input type="password" placeholder="Password for this file" aria-label="Password for ${esc(f.name)}" autocomplete="off"><button class="btn small" type="submit">Open</button></form>` : ""}
+        </div>
+        <button class="x" title="Remove" aria-label="Remove ${esc(f.name)}">&times;</button>
+      </li>`).join("");
+  }
+
+  $("#files").addEventListener("click", (e) => {
+    const li = e.target.closest(".file"); if (!li) return;
+    if (e.target.closest(".x")) { state.files = state.files.filter((f) => f.id !== +li.dataset.id); renderFiles(); recompute(); }
+  });
+  $("#files").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const li = e.target.closest(".file"); const f = state.files.find((x) => x.id === +li.dataset.id);
+    const pw = e.target.querySelector("input").value.trim();
+    if (f) processFile(f, pw);
+  });
+
+  // ---------- results ----------
+  function recompute() {
+    const docs = state.files.filter((f) => f.status === "ok").map((f) => f.doc);
+    if (!docs.length) { state.rows = []; state.summary = null; $("#results").style.display = "none"; return; }
+    // fresh copies so re-merging never reuses mutated rows
+    const fresh = docs.map((d) => ({ ...d, rows: d.rows.map((r) => ({ ...r })) }));
+    state.rows = MpesaParser.combine(fresh);
+    state.summary = MpesaParser.summarize(state.rows, fresh);
+    renderResults();
+  }
+
+  function renderResults() {
+    const s = state.summary, rows = state.rows;
+    $("#results").style.display = "block";
+    const d = (ts) => new Date(ts).toISOString().slice(0, 10);
+    $("#resTitle").textContent = s.name ? s.name : "Statement";
+    $("#resSub").innerHTML = esc(`${s.mobile ? s.mobile + " · " : ""}${s.count.toLocaleString()} transactions from `) + `<span class="nw">${d(s.from)}</span> to <span class="nw">${d(s.to)}</span>`;
+    const net = s.totalIn - s.totalOut;
+    $("#kpis").innerHTML = [
+      ["Money in", KES(s.totalIn), "in", true], ["Money out", KES(s.totalOut), "out", true],
+      ["Net flow", (net < 0 ? "-" : "") + KES(Math.abs(net)), net < 0 ? "out" : "in", true],
+      ["Opening balance", KES(s.opening)], ["Closing balance", KES(s.closing)],
+      ["Charges & fees", KES(s.charges)], ["Fuliza drawn", KES(s.fulizaDrawn)],
+    ].map(([k, v, cls, big]) => `<div class="kpi ${big ? "big" : ""}"><div class="k">${k}</div><div class="v num ${cls || ""}">${v}</div></div>`).join("");
+
+    const checks = [];
+    if (s.mismatches === 0) checks.push(["ok", `<b>Balances reconcile.</b> All ${(s.count - 1).toLocaleString()} rows follow from the previous balance.`]);
+    else checks.push(["bad", `<b>${s.mismatches} row(s) don't follow from the previous balance.</b> They're highlighted below and flagged in the workbook. A gap between two statements, or a missing page, causes this.`]);
+    if (s.pdfTotals) {
+      const ok = Math.abs(s.totalIn - s.pdfTotals.in) < 0.005 && Math.abs(s.totalOut - s.pdfTotals.out) < 0.005;
+      checks.push([ok ? "ok" : "bad", ok
+        ? `<b>Totals match the statement summary</b> (in ${KES(s.pdfTotals.in)}, out ${KES(s.pdfTotals.out)}).`
+        : `<b>Totals differ from the statement summary.</b> PDF says in ${KES(s.pdfTotals.in)} / out ${KES(s.pdfTotals.out)}; extracted in ${KES(s.totalIn)} / out ${KES(s.totalOut)}.`]);
+    }
+    if (s.guessed) checks.push(["bad", `<b>${s.guessed} amount(s)</b> had no clear in/out column. Their direction was inferred from the balance.`]);
+    $("#checks").innerHTML = checks.map(([c, t]) => `<div class="check ${c}">${t}</div>`).join("");
+
+    $("#types tbody").innerHTML = s.byType.map((t) => `<tr><td>${esc(t.type)}</td><td class="r">${t.n}</td><td class="r">${t.out ? KES(t.out) : ""}</td><td class="r">${t.in ? KES(t.in) : ""}</td></tr>`).join("");
+    const sel = $("#typeFilter"), cur = sel.value;
+    sel.innerHTML = '<option value="">All types</option>' + s.byType.map((t) => `<option ${t.type === cur ? "selected" : ""}>${esc(t.type)}</option>`).join("");
+    renderTable();
+  }
+
+  const LIMIT = 300;
+  function renderTable() {
+    const q = $("#q").value.trim().toLowerCase(), type = $("#typeFilter").value;
+    const list = state.rows.filter((r) => (!type || r.type === type) &&
+      (!q || (r.details + " " + r.party + " " + r.partyId + " " + r.receipt + " " + r.account).toLowerCase().includes(q)));
+    const shown = list.slice().reverse().slice(0, LIMIT);
+    $("#count").textContent = list.length > LIMIT ? `Newest ${LIMIT} of ${list.length.toLocaleString()} shown. The workbook has all of them.` : `${list.length.toLocaleString()} shown`;
+    $("#tx tbody").innerHTML = shown.map((r) => {
+      const t = new Date(r.ts).toISOString();
+      return `<tr class="${r.check === "Mismatch" ? "bad" : ""}" ${r.check === "Mismatch" ? `title="Expected balance ${KES(r.expected)}"` : ""}>
+        <td class="when">${t.slice(0, 10)}<br><span class="count">${t.slice(11, 16)}</span></td>
+        <td class="mono">${esc(r.receipt)}</td>
+        <td>${esc(r.details)}<br><span class="pill">${esc(r.type)}</span></td>
+        <td class="r in">${r.paidIn ? KES(r.paidIn) : ""}</td>
+        <td class="r out">${r.withdrawn ? KES(r.withdrawn) : ""}</td>
+        <td class="r">${r.balance != null ? KES(r.balance) : ""}</td></tr>`;
+    }).join("");
+  }
+  $("#q").addEventListener("input", renderTable);
+  $("#typeFilter").addEventListener("change", renderTable);
+
+  function baseName() {
+    const s = state.summary;
+    const who = (s.name || "MPesa").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40) || "MPesa";
+    const d = (ts) => new Date(ts).toISOString().slice(0, 10);
+    return `MPesa_${who}_${d(s.from)}_to_${d(s.to)}`;
+  }
+  $("#dlXlsx").addEventListener("click", async (e) => {
+    const b = e.currentTarget; if (!state.rows.length) return;
+    b.disabled = true; const label = b.lastChild.textContent; b.lastChild.textContent = " Building workbook";
+    try {
+      const wb = MpesaExcel.build(ExcelJS, state.rows, state.summary);
+      const buf = await wb.xlsx.writeBuffer();
+      await saveFile(baseName() + ".xlsx", new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    } catch (err) { console.error(err); toast("Couldn't build the workbook: " + err.message); }
+    finally { b.disabled = false; b.lastChild.textContent = label; }
+  });
+  $("#dlCsv").addEventListener("click", async () => {
+    if (!state.rows.length) return;
+    await saveFile(baseName() + ".csv", new Blob([MpesaExcel.toCSV(state.rows)], { type: "text/csv" }));
+  });
+
+  // ---------- inputs ----------
+  const drop = $("#drop");
+  $("#fileInput").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", (e) => addFiles(e.dataTransfer.files));
+  window.addEventListener("dragover", (e) => e.preventDefault());
+  window.addEventListener("drop", (e) => e.preventDefault());
+  $("#pwToggle").addEventListener("click", (e) => {
+    const i = $("#pw"); const show = i.type === "password";
+    i.type = show ? "text" : "password"; e.currentTarget.textContent = show ? "Hide" : "Show";
+    e.currentTarget.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  });
+  // re-try locked files when the main password changes
+  $("#pw").addEventListener("change", () => {
+    const pw = $("#pw").value.trim();
+    state.files.filter((f) => f.status === "err" && f.needsPw).forEach((f) => processFile(f, pw));
+  });
+})();
+</script>
+</body>
+</html>
