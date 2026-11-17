@@ -23,7 +23,6 @@ import json
 import random
 import sys
 import tempfile
-import zlib
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -59,6 +58,26 @@ def rc4(key, data):
         S[i], S[j] = S[j], S[i]
         out.append(b ^ S[(S[i] + S[j]) & 255])
     return bytes(out)
+
+
+def run_length_encode(data):
+    """PDF RunLengthDecode: a length byte below 128 copies that many plus one bytes; 257 minus a length byte
+    above 128 repeats the next byte; 128 ends the data."""
+    out, i, n = bytearray(), 0, len(data)
+    while i < n:
+        j = i
+        while j < n and j - i < 128 and data[j] == data[i]:
+            j += 1
+        if j - i >= 2:
+            out += bytes([257 - (j - i), data[i]])
+            i = j
+            continue
+        j = i + 1
+        while j < n and j - i < 128 and not (j + 1 < n and data[j] == data[j + 1]):
+            j += 1
+        out += bytes([j - i - 1]) + data[i:j]
+        i = j
+    return bytes(out + b"\x80")
 
 
 class Security:
@@ -107,12 +126,16 @@ class Writer:
         self.objs[num] = body
         return num
 
-    def stream(self, data, extra=""):
+    def stream(self, data, extra="", run_length=False):
+        # No zlib: its output can differ between builds, and the files must come out byte for byte the same
+        # on every machine. Text streams are stored as they are; the scanned page is run-length encoded.
         num = self.reserve()
-        data = zlib.compress(data, 9)
+        filt = ""
+        if run_length:
+            data, filt = run_length_encode(data), " /Filter /RunLengthDecode"
         if self.sec:
             data = self.sec.encrypt(num, data)
-        self.objs[num] = f"<< /Length {len(data)} /Filter /FlateDecode{extra} >>\nstream\n".encode() + data + b"\nendstream"
+        self.objs[num] = f"<< /Length {len(data)}{filt}{extra} >>\nstream\n".encode() + data + b"\nendstream"
         return num
 
     def finish(self, root):
@@ -143,7 +166,8 @@ def pdf_document(name, pages, password=None, image=None):
         xobj = ""
         if image is not None:
             iw, ih, pixels = image
-            im = w.stream(pixels, f" /Type /XObject /Subtype /Image /Width {iw} /Height {ih} /ColorSpace /DeviceGray /BitsPerComponent 8")
+            im = w.stream(pixels, f" /Type /XObject /Subtype /Image /Width {iw} /Height {ih} /ColorSpace /DeviceGray /BitsPerComponent 8",
+                          run_length=True)
             xobj = f" /XObject << /Im1 {im} 0 R >>"
         content = w.stream("".join(ops).encode("ascii"))
         kids.append(w.add((f"<< /Type /Page /Parent {pages_num} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 {f1} 0 R "
