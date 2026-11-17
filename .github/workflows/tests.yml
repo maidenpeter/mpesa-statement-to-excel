@@ -1,0 +1,25 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Plain ASCII, no flagged phrases
+        run: python tests/check_text.py
+      - name: The synthetic statements match a fresh build
+        run: python tests/make_fixtures.py --check
+      - name: Parser on every synthetic statement (the shipped pdf.js, in Node)
+        run: node --test tests/parser.test.mjs
+      - name: Browser
+        run: |
+          pip install playwright==1.58.0 openpyxl==3.1.5
+          python -m playwright install --with-deps chromium
+      - name: The page end to end, with every request recorded
+        run: python tests/e2e.py
