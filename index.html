@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="lib/app.css">
 </head>
 <body>
+<header class="site"><a href="https://maidenpeter.github.io/">Marion Peter, Actuarial Engineer</a></header>
 <main class="wrap">
   <h1>Turn M-Pesa PDF statements into Excel</h1>
   <p class="lede">Drop in one or more Safaricom M-Pesa statements. You get a formatted workbook with every transaction, who it went to, monthly totals, charges, Fuliza and a running-balance check. The PDF is read inside this browser and never uploaded.</p>
@@ -77,6 +78,7 @@
     <div><b>Private by design.</b> Files are read with pdf.js inside this page. Nothing is sent to a server, and nothing is stored after you close the tab.</div>
     <div><b>Works with</b> Safaricom M-Pesa customer statements downloaded as PDF from the M-Pesa app or USSD (*334#). Scanned or photographed statements have no text layer and can't be read.</div>
     <div><b>How it checks itself:</b> every row's balance must equal the previous balance plus money in minus money out. Rows that don't follow are flagged in the workbook, and totals are compared with the statement's own summary.</div>
+    <div><b>Code and tests:</b> <a href="https://github.com/maidenpeter/mpesa-statement-to-excel">github.com/maidenpeter/mpesa-statement-to-excel</a>. The tests run the page on synthetic statements and fail if any request leaves this page.</div>
   </footer>
 </main>
 <div class="toast" id="toast" role="status"></div>
