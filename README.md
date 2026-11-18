@@ -4,7 +4,7 @@ Turn Safaricom M-Pesa PDF statements into a checked Excel workbook, inside your 
 
 **Open it:** https://maidenpeter.github.io/mpesa-statement-to-excel/
 
-Drop in one or more statements. The page lists every transaction with its type and counterparty, checks that every balance follows from the one before, compares its totals with the statement's own summary, and gives you a formatted workbook or a CSV.
+Add one or more statements, on a computer or a phone. The page lists every transaction with its type and counterparty, checks that every balance follows from the one before, compares its totals with the statement's own summary, and gives you a formatted workbook or a CSV.
 
 ![The page after reading a synthetic one-month statement: money in and out, opening and closing balance, charges, Fuliza, and two checks that pass](docs/screenshot.png)
 
@@ -17,22 +17,22 @@ Drop in one or more statements. The page lists every transaction with its type a
 - **The counterparty**: the name, the phone, till or paybill number, and the account number for paybill payments.
 - **Several statements at once.** Rows that appear in more than one statement (same receipt, time, details, amounts and balance) are kept once, so overlapping downloads can be combined.
 - **The workbook** has six sheets:
-  - Summary: the account, the period, the key figures and a table by type, all as live formulas, and the data checks;
-  - Transactions: every row, filterable, with a balance check column and a totals row;
+  - Summary: the account, the period, the key figures and a table by type, all as live formulas, and the data checks, including the running-balance check done again by Excel from the Difference column;
+  - Transactions: every row, filterable, with a balance check column and a totals row. Two columns hold the check as live formulas: Expected balance (the previous balance plus money in minus money out) and Difference (the balance on the statement less the expected one), so the reconciliation can be audited in Excel itself;
   - Money in and Money out: every transaction in that direction with its details (time, receipt, details, type, counterparty, number, account, amount, balance after and balance check), so each side can be checked line by line. The total follows any filter, and a formula under it checks the sheet against the Summary's money in or money out;
   - Monthly: money in and out, charges, Fuliza drawn and the closing balance for each month;
   - Counterparties: who money went to and came from.
-- **On the page**, the transaction list can be narrowed to money in or money out, by type, or by a search, and it shows the money in and out of whatever is listed.
+- **On the page**, the transaction list can be narrowed to money in or money out, to the rows that don't reconcile, by type, or by a search, and it shows the money in and out of whatever is listed. Each type in the By type table opens its own transactions, and a warning about rows that don't reconcile has a link that lists them.
 - **A CSV** of the transactions, marked as UTF-8 so Excel reads it correctly.
 
 ## Private by design
 
-The statement is read with [PDF.js](https://github.com/mozilla/pdf.js) inside the page. It is never sent anywhere, and nothing is kept after you close the tab.
+The statement is read with [PDF.js](https://github.com/mozilla/pdf.js) inside the page. It is never sent anywhere, and nothing from it is kept after you close the tab. The only thing the page stores is the theme you choose (ink or paper), the same setting the rest of the site uses.
 
 The page enforces this, and the tests check it:
 
 - **A content security policy** in the page lets it load only its own files and connect only to its own origin. A script on the page cannot reach any other server.
-- **The page loads nothing from anywhere else**: no fonts, analytics or code from a CDN. PDF.js and ExcelJS are copied into `lib/`.
+- **The page loads nothing from anywhere else**: no fonts, analytics or code from a CDN. PDF.js and ExcelJS are copied into `lib/`, and the site's typefaces into `fonts/`.
 - **The end-to-end test records every request** the page makes while it reads each synthetic statement and builds each workbook. It fails if any request goes to another origin, or if the policy blocks anything. It also checks that the policy stops a request to another site.
 
 GitHub serves the page and its files, as for any website. After that, your statement stays in your browser.
@@ -46,6 +46,12 @@ GitHub serves the page and its files, as for any website. After that, your state
 - **Direction from the balance.** If an amount sits where its column is unclear, the change in balance decides whether it was money in or out. Any row decided this way is counted and reported.
 - **Order within the same second.** A payment and its charge often carry the same completion time and can be printed in either order. Rows in the same second are put in the order their balances follow.
 - **Rows split across pages.** When a transaction's details run over a page break, the two parts are joined back into one row.
+
+## On a phone
+
+Tap the upload area and choose the statement from Files, Downloads or your email app. Phones often hand a file over with no ".pdf" in its name and no type, so the page recognises a PDF by its first bytes rather than by its name. The password box takes letters as well as numbers (some ID and passport numbers have letters), and the workbook and CSV download straight to the phone. If the file picker does not open inside another app's built-in browser, open the page in Chrome or Safari.
+
+The tests run the page as an iPhone and as an Android phone: a tap opens the picker, the statement chosen is read, files without a name or type are read, other files are refused, the workbook downloads and nothing scrolls sideways.
 
 ## Which statements it reads
 
@@ -96,6 +102,7 @@ python tests/e2e.py                   # the page in a browser, end to end
 - **The Node tests** read each statement with the same PDF.js build the page ships. They compare every row and every total with `expected.json`: receipt, time, details, amounts, balance, type, counterparty, account and balance check. They also test merging, the wrong-password and no-text-layer errors, the CSV and the vendored files' hashes.
 - **The browser test** uploads each statement and reads the figures and checks the page shows. It downloads the workbook and the CSV, opens them, and compares their sheets, rows and totals with the expected values.
 - **Privacy and layout.** The browser test also runs the request, policy and password checks described above, and confirms the page has no sideways scrolling at 1280 and 390 pixels wide.
+- **Phones, themes and contrast.** It runs the page as an iPhone and an Android phone (see above), switches between the ink and paper themes, and checks that every piece of text meets the WCAG AA contrast ratio in both.
 
 GitHub Actions runs all of them on every push.
 
@@ -103,4 +110,4 @@ To try the page on a real statement of your own, put it in `tests/private/`. Tha
 
 ## Third-party code
 
-PDF.js 3.11.174 (Apache-2.0) and ExcelJS 4.4.0 (MIT) are kept in `lib/` byte for byte as published. Their versions, licenses and SHA-256 hashes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the license texts are in `LICENSES/`.
+PDF.js 3.11.174 (Apache-2.0) and ExcelJS 4.4.0 (MIT) are kept in `lib/` byte for byte as published. The page uses the look of https://maidenpeter.github.io, so the site's typefaces (EB Garamond, IBM Plex Sans Condensed, IM Fell English, IM Fell English SC, Pinyon Script and Old Standard TT, all under the SIL Open Font License) are kept in `fonts/`. Versions, licenses and SHA-256 hashes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the license texts are in `LICENSES/`.

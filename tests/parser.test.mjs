@@ -178,10 +178,16 @@ test("the test reads PDFs the way the page does", () => {
   assert.ok(app.includes("isEvalSupported: false"));
 });
 
-test("vendored libraries match the hashes in THIRD_PARTY_NOTICES.md", () => {
+test("vendored libraries and fonts match the hashes in THIRD_PARTY_NOTICES.md", () => {
   const notices = fs.readFileSync(path.join(ROOT, "THIRD_PARTY_NOTICES.md"), "utf8");
-  for (const f of ["pdf.min.js", "pdf.worker.min.js", "exceljs.min.js"]) {
-    const sha = crypto.createHash("sha256").update(fs.readFileSync(path.join(ROOT, "lib", f))).digest("hex");
-    assert.ok(notices.includes("`lib/" + f + "`") && notices.includes(sha), `${f}: ${sha}`);
+  const files = ["lib/pdf.min.js", "lib/pdf.worker.min.js", "lib/exceljs.min.js"]
+    .concat(fs.readdirSync(path.join(ROOT, "fonts")).map((f) => "fonts/" + f));
+  assert.ok(files.length >= 12);
+  for (const f of files) {
+    const sha = crypto.createHash("sha256").update(fs.readFileSync(path.join(ROOT, f))).digest("hex");
+    assert.ok(notices.includes("`" + f + "`") && notices.includes(sha), `${f}: ${sha}`);
   }
+  // every font the stylesheet asks for is there
+  const css = fs.readFileSync(path.join(ROOT, "lib", "app.css"), "utf8");
+  for (const m of css.matchAll(/url\(\.\.\/(fonts\/[^)]+)\)/g)) assert.ok(fs.existsSync(path.join(ROOT, m[1])), m[1]);
 });
