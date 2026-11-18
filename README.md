@@ -18,7 +18,7 @@ Add one or more statements, on a computer or a phone. The page lists every trans
 - **Several statements at once.** Rows that appear in more than one statement (same receipt, time, details, amounts and balance) are kept once, so overlapping downloads can be combined.
 - **The workbook** has six sheets:
   - Summary: the account, the period, the key figures and a table by type, all as live formulas, and the data checks, including the running-balance check done again by Excel from the Difference column;
-  - Transactions: every row, filterable, with a balance check column and a totals row. Two columns hold the check as live formulas: Expected balance (the previous balance plus money in minus money out) and Difference (the balance on the statement less the expected one), so the reconciliation can be audited in Excel itself;
+  - Transactions: every row, filterable, with a balance check column and a totals row. Details and names are never cut off: they wrap inside their cells, and each row is made tall enough for all its lines. Two columns hold the check as live formulas: Expected balance (the previous balance plus money in minus money out) and Difference (the balance on the statement less the expected one), so the reconciliation can be audited in Excel itself;
   - Money in and Money out: every transaction in that direction with its details (time, receipt, details, type, counterparty, number, account, amount, balance after and balance check), so each side can be checked line by line. The total follows any filter, and a formula under it checks the sheet against the Summary's money in or money out;
   - Monthly: money in and out, charges, Fuliza drawn and the closing balance for each month;
   - Counterparties: who money went to and came from.

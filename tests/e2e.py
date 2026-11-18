@@ -206,6 +206,71 @@ def check_workbook(label, name, data, e, rows, files=1):
     return wb
 
 
+def line_count(text, width):
+    """The workbook's own count of wrapped lines (lib/excel.js, lineCount), written again here."""
+    cap = max(8, int(width * 0.85))
+    n, cur = 1, 0
+    for w in str(text or "").split():
+        need = cur + 1 + len(w) if cur else len(w)
+        if need <= cap:
+            cur = need
+            continue
+        if cur:
+            n += 1
+        n += (len(w) - 1) // cap
+        cur = len(w) % cap or cap
+    return n
+
+
+def check_wrapping(label, data, rows):
+    """Long details and names are never cut off: their cells wrap and each row is tall enough for its lines."""
+    wb = openpyxl.load_workbook(io.BytesIO(data))
+    for sheet, key in [("Transactions", None), ("Money in", "paidIn"), ("Money out", "withdrawn")]:
+        ws = wb[sheet]
+        want = [x for x in rows if key is None or x[key] > 0]
+        bad, tall = [], 0
+        for i, x in enumerate(want, 2):
+            d, c = ws.cell(i, 3), ws.cell(i, 5)
+            need = max(line_count(x["details"], 58), line_count(x["party"], 30))
+            h = ws.row_dimensions[i].height
+            ok = d.alignment.wrap_text and c.alignment.wrap_text and d.alignment.vertical == "top" and \
+                (h is not None and h >= need * 15 if need > 1 else (h is None or h <= 17))
+            tall += need > 1
+            if not ok:
+                bad.append((i, need, h, d.alignment.wrap_text))
+        check(not bad, f"{label}: {sheet} details and names wrap, rows tall enough ({tall} of {len(want)} need more than one line) {bad[:3]}")
+
+
+def check_line_estimate():
+    """The workbook's line count is never short of the lines Excel draws: every fixture's details, and some long
+    names, laid out in Calibri 11 (Excel's default) at the Details column's width in pixels. Needs the Calibri
+    font, which is on Windows; skipped elsewhere."""
+    try:
+        from PIL import ImageFont
+        font = ImageFont.truetype("calibri.ttf", 15)  # 11pt at 96 dpi is 14.7px; 15px errs on the wide side
+    except Exception:
+        print("skip: Calibri not found, so the line estimate is not checked against real glyph widths")
+        return
+    texts = {x["details"] for e in EXPECT["statements"].values() for x in e.get("rows", [])}
+    texts |= {"Customer Transfer to 2547******123 - MWANGI KAMAU WAMBUI NJOROGE OTIENO WANJIKU MUTUA",
+              "Pay Bill Online to 888888 - KENYA WATER AND SEWERAGE COMPANY LIMITED WESTLANDS BRANCH Acc. 0000123456789"}
+    for width, col in [(58, "Details")]:
+        px = width * 7 + 5 - 4  # Excel's pixel width for the column, less the cell's padding
+        short = []
+        for t in texts:
+            lines, cur = 1, ""
+            for w in t.split():
+                trial = (cur + " " + w) if cur else w
+                if font.getlength(trial) <= px:
+                    cur = trial
+                else:
+                    lines += 1 if cur else 0
+                    cur = w
+            if lines > line_count(t, width):
+                short.append((t[:50], lines, line_count(t, width)))
+        check(not short, f"{col}: the workbook's line count covers what Excel draws in Calibri ({len(texts)} texts) {short[:2]}")
+
+
 def check_direction(s, label, e, rows):
     """The page's Money in / Money out filter lists one direction and shows its total."""
     for value, key, total in [("in", "paidIn", "totalIn"), ("out", "withdrawn", "totalOut")]:
@@ -400,6 +465,7 @@ def phones_and_themes(browser, base, devices):
 def run(browser, base, readme_shot, devices):
     OUT.mkdir(parents=True, exist_ok=True)
     sessions = []
+    check_line_estimate()
 
     # single statements
     for name, e in EXPECT["statements"].items():
@@ -414,6 +480,7 @@ def run(browser, base, readme_shot, devices):
         check_direction(s, name, e["summary"], e["rows"])
         xn, xb = s.download("#dlXlsx")
         check_workbook(name, xn, xb, e["summary"], e["rows"])
+        check_wrapping(name, xb, e["rows"])
         cn, cb = s.download("#dlCsv")
         check_csv(name, cn, cb, e["summary"])
 
@@ -425,6 +492,7 @@ def run(browser, base, readme_shot, devices):
     check_results(s, "overlap merged", m["summary"])
     xn, xb = s.download("#dlXlsx")
     wb = check_workbook("overlap merged", xn, xb, m["summary"], m["rows"], files=2)
+    check_wrapping("overlap merged", xb, m["rows"])
     src = {r[14] for r in wb["Transactions"].iter_rows(min_row=2, max_row=m["summary"]["count"] + 1, values_only=True)}
     check(src == set(m["files"]), f"overlap merged: source files {sorted(src)}")
 
