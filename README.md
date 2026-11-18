@@ -87,6 +87,7 @@ Then open http://localhost:8000.
 | `fuliza.pdf` | Fuliza drawn, repaid and its fees, with the cells laid out centred on the row |
 | `balance_break.pdf` | One payment missing from the rows but counted in the summary's TOTAL |
 | `locked.pdf` | Password-protected (the password, `TEST1234`, is in `expected.json`) |
+| `details_as_printed.pdf` | Payments whose details use a page footer's words ("Safaricom PLC", "customer care"), on a row's first line and on a wrapped line; every detail must come out exactly as printed |
 | `scanned.pdf` | An image with no text layer |
 
 The tests:

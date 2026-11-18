@@ -104,6 +104,15 @@ test("multi_page.pdf: a payment and its charge printed in the order they happene
   assert.equal(rows.filter((r) => r.check === "Mismatch").length, 0);
 });
 
+test("details_as_printed.pdf: details naming Safaricom PLC or a customer care desk come out exactly as printed", async () => {
+  // These words also appear in page footers. A row whose first line used them was dropped, and a wrapped line
+  // using them was cut out of the details, until the footer rule learnt to leave the table's own lines alone.
+  const rows = parser.combine([await read("details_as_printed.pdf")]);
+  const want = EXPECT.statements["details_as_printed.pdf"].rows.map((r) => r.details);
+  assert.ok(want.some((d) => /^Pay Bill to \d+ - SAFARICOM PLC$/.test(d)) && want.some((d) => /CUSTOMER CARE/.test(d)));
+  assert.deepEqual(rows.map((r) => r.details), want);
+});
+
 test("fuliza.pdf: Fuliza drawn, repaid and its fees", async () => {
   const doc = await read("fuliza.pdf");
   const rows = parser.combine([doc]);

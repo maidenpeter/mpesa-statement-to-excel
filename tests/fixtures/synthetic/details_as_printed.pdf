@@ -1,0 +1,137 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 5750 >>
+stream
+BT /F2 12 Tf 1 0 0 1 30.00 805.00 Tm (M-PESA STATEMENT) Tj ET
+BT /F2 8 Tf 1 0 0 1 30.00 785.00 Tm (Customer Name:) Tj ET
+BT /F1 8 Tf 1 0 0 1 120.00 785.00 Tm (AMANI TESTER) Tj ET
+BT /F2 8 Tf 1 0 0 1 30.00 773.00 Tm (Mobile Number:) Tj ET
+BT /F1 8 Tf 1 0 0 1 120.00 773.00 Tm (254700000000) Tj ET
+BT /F2 8 Tf 1 0 0 1 30.00 761.00 Tm (Email Address:) Tj ET
+BT /F1 8 Tf 1 0 0 1 120.00 761.00 Tm (amani.tester@example.com) Tj ET
+BT /F2 8 Tf 1 0 0 1 30.00 749.00 Tm (Statement Period:) Tj ET
+BT /F1 8 Tf 1 0 0 1 120.00 749.00 Tm (01 Aug 2026 - 31 Aug 2026) Tj ET
+BT /F2 8 Tf 1 0 0 1 30.00 737.00 Tm (Request Date:) Tj ET
+BT /F1 8 Tf 1 0 0 1 120.00 737.00 Tm (01 Sep 2026) Tj ET
+BT /F2 9 Tf 1 0 0 1 30.00 712.00 Tm (SUMMARY) Tj ET
+BT /F2 7 Tf 1 0 0 1 30.00 698.00 Tm (TRANSACTION TYPE) Tj ET
+BT /F2 7 Tf 1 0 0 1 296.00 698.00 Tm (PAID IN) Tj ET
+BT /F2 7 Tf 1 0 0 1 391.00 698.00 Tm (PAID OUT) Tj ET
+0.4 w 0.6 G 30 694.00 m 430 694.00 l S 0 G
+BT /F1 7 Tf 1 0 0 1 30.00 686.00 Tm (SEND MONEY) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 686.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 416.38 686.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 675.00 Tm (RECEIVED MONEY) Tj ET
+BT /F1 7 Tf 1 0 0 1 302.76 675.00 Tm (8,000.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 416.38 675.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 664.00 Tm (AGENT DEPOSIT) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 664.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 416.38 664.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 653.00 Tm (AGENT WITHDRAWAL) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 653.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 416.38 653.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 642.00 Tm (LIPA NA M-PESA \(PAYBILL\)) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 642.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 402.76 642.00 Tm (4,900.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 631.00 Tm (LIPA NA M-PESA \(BUY GOODS\)) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 631.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 416.38 631.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 620.00 Tm (OTHERS) Tj ET
+BT /F1 7 Tf 1 0 0 1 316.38 620.00 Tm (0.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 412.49 620.00 Tm (10.00) Tj ET
+0.4 w 0.6 G 30 616.00 m 430 616.00 l S 0 G
+BT /F2 7 Tf 1 0 0 1 30.00 607.00 Tm (TOTAL:) Tj ET
+BT /F2 7 Tf 1 0 0 1 302.76 607.00 Tm (8,000.00) Tj ET
+BT /F2 7 Tf 1 0 0 1 402.76 607.00 Tm (4,910.00) Tj ET
+BT /F2 9 Tf 1 0 0 1 30.00 585.00 Tm (DETAILED STATEMENT) Tj ET
+0.6 w 0.3 G 30 575.00 m 580 575.00 l S 0 G
+BT /F2 7 Tf 1 0 0 1 30.00 566.00 Tm (Receipt No.) Tj ET
+BT /F2 7 Tf 1 0 0 1 95.00 566.00 Tm (Completion Time) Tj ET
+BT /F2 7 Tf 1 0 0 1 175.00 566.00 Tm (Details) Tj ET
+BT /F2 7 Tf 1 0 0 1 345.00 566.00 Tm (Transaction Status) Tj ET
+BT /F2 7 Tf 1 0 0 1 405.00 566.00 Tm (Paid In) Tj ET
+BT /F2 7 Tf 1 0 0 1 465.00 566.00 Tm (Withdrawn) Tj ET
+BT /F2 7 Tf 1 0 0 1 525.00 566.00 Tm (Balance) Tj ET
+0.6 w 0.3 G 30 562.00 m 580 562.00 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 552.00 Tm (Funds received from 0700***302 - OTIENO) Tj ET
+BT /F1 7 Tf 1 0 0 1 175.00 543.50 Tm (SAMPLE) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 552.00 Tm (ZQD0000005) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 552.00 Tm (2026-08-25 10:10:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 552.00 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 430.76 552.00 Tm (2,000.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 552.00 Tm (5,590.00) Tj ET
+0.3 w 0.8 G 30 538.25 m 580 538.25 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 529.00 Tm (Pay Bill Online to 400500 - SAMPLE) Tj ET
+BT /F1 7 Tf 1 0 0 1 175.00 520.50 Tm (INSURANCE CUSTOMER CARE DESK Acc.) Tj ET
+BT /F1 7 Tf 1 0 0 1 175.00 512.00 Tm (12345678) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 529.00 Tm (ZQD0000004) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 529.00 Tm (2026-08-12 08:05:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 529.00 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 494.26 529.00 Tm (-500.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 529.00 Tm (3,590.00) Tj ET
+0.3 w 0.8 G 30 506.75 m 580 506.75 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 497.50 Tm (Pay Bill Online to 299002 - HOME FIBRE) Tj ET
+BT /F1 7 Tf 1 0 0 1 175.00 489.00 Tm (BY SAFARICOM PLC Acc. 0700000001) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 497.50 Tm (ZQD0000003) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 497.50 Tm (2026-08-09 18:45:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 497.50 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 488.43 497.50 Tm (-2,900.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 497.50 Tm (4,090.00) Tj ET
+0.3 w 0.8 G 30 483.75 m 580 483.75 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 474.50 Tm (Pay Bill Charge) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 474.50 Tm (ZQD0000002) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 474.50 Tm (2026-08-05 12:30:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 474.50 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 498.15 474.50 Tm (-10.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 474.50 Tm (6,990.00) Tj ET
+0.3 w 0.8 G 30 469.25 m 580 469.25 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 460.00 Tm (Pay Bill to 299001 - SAFARICOM PLC) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 460.00 Tm (ZQD0000002) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 460.00 Tm (2026-08-05 12:30:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 460.00 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 488.43 460.00 Tm (-1,500.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 460.00 Tm (7,000.00) Tj ET
+0.3 w 0.8 G 30 454.75 m 580 454.75 l S 0 G
+BT /F1 7 Tf 1 0 0 1 175.00 445.50 Tm (Funds received from 0700***301 - WANJIRU) Tj ET
+BT /F1 7 Tf 1 0 0 1 175.00 437.00 Tm (TESTER) Tj ET
+BT /F1 7 Tf 1 0 0 1 30.00 445.50 Tm (ZQD0000001) Tj ET
+BT /F1 7 Tf 1 0 0 1 95.00 445.50 Tm (2026-08-02 09:15:00) Tj ET
+BT /F1 7 Tf 1 0 0 1 345.00 445.50 Tm (Completed) Tj ET
+BT /F1 7 Tf 1 0 0 1 430.76 445.50 Tm (6,000.00) Tj ET
+BT /F1 7 Tf 1 0 0 1 550.76 445.50 Tm (8,500.00) Tj ET
+0.3 w 0.8 G 30 431.75 m 580 431.75 l S 0 G
+BT /F1 6 Tf 1 0 0 1 30.00 48.00 Tm (Disclaimer: This record is produced for your personal use. It is a synthetic test statement.) Tj ET
+BT /F1 7 Tf 1 0 0 1 270.00 34.00 Tm (Page 1 of 1) Tj ET
+
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000320 00000 n 
+0000006122 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R /ID [<2c4c840e07df87966a00fe43607f116b> <2c4c840e07df87966a00fe43607f116b>] >>
+startxref
+6258
+%%EOF

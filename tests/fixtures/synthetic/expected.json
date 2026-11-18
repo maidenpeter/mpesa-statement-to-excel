@@ -1202,6 +1202,115 @@
     "totalOut": 15112.0
    }
   },
+  "details_as_printed.pdf": {
+   "pages": 1,
+   "password": false,
+   "rows": [
+    {
+     "account": "",
+     "balance": 8500.0,
+     "check": "Start",
+     "details": "Funds received from 0700***301 - WANJIRU TESTER",
+     "paidIn": 6000.0,
+     "party": "WANJIRU TESTER",
+     "partyId": "0700***301",
+     "receipt": "ZQD0000001",
+     "status": "Completed",
+     "time": "2026-08-02 09:15:00",
+     "type": "Received money",
+     "withdrawn": 0.0
+    },
+    {
+     "account": "",
+     "balance": 7000.0,
+     "check": "OK",
+     "details": "Pay Bill to 299001 - SAFARICOM PLC",
+     "paidIn": 0.0,
+     "party": "SAFARICOM PLC",
+     "partyId": "299001",
+     "receipt": "ZQD0000002",
+     "status": "Completed",
+     "time": "2026-08-05 12:30:00",
+     "type": "Paybill",
+     "withdrawn": 1500.0
+    },
+    {
+     "account": "",
+     "balance": 6990.0,
+     "check": "OK",
+     "details": "Pay Bill Charge",
+     "paidIn": 0.0,
+     "party": "",
+     "partyId": "",
+     "receipt": "ZQD0000002",
+     "status": "Completed",
+     "time": "2026-08-05 12:30:00",
+     "type": "Transaction charge",
+     "withdrawn": 10.0
+    },
+    {
+     "account": "0700000001",
+     "balance": 4090.0,
+     "check": "OK",
+     "details": "Pay Bill Online to 299002 - HOME FIBRE BY SAFARICOM PLC Acc. 0700000001",
+     "paidIn": 0.0,
+     "party": "HOME FIBRE BY SAFARICOM PLC",
+     "partyId": "299002",
+     "receipt": "ZQD0000003",
+     "status": "Completed",
+     "time": "2026-08-09 18:45:00",
+     "type": "Paybill",
+     "withdrawn": 2900.0
+    },
+    {
+     "account": "12345678",
+     "balance": 3590.0,
+     "check": "OK",
+     "details": "Pay Bill Online to 400500 - SAMPLE INSURANCE CUSTOMER CARE DESK Acc. 12345678",
+     "paidIn": 0.0,
+     "party": "SAMPLE INSURANCE CUSTOMER CARE DESK",
+     "partyId": "400500",
+     "receipt": "ZQD0000004",
+     "status": "Completed",
+     "time": "2026-08-12 08:05:00",
+     "type": "Paybill",
+     "withdrawn": 500.0
+    },
+    {
+     "account": "",
+     "balance": 5590.0,
+     "check": "OK",
+     "details": "Funds received from 0700***302 - OTIENO SAMPLE",
+     "paidIn": 2000.0,
+     "party": "OTIENO SAMPLE",
+     "partyId": "0700***302",
+     "receipt": "ZQD0000005",
+     "status": "Completed",
+     "time": "2026-08-25 10:10:00",
+     "type": "Received money",
+     "withdrawn": 0.0
+    }
+   ],
+   "summary": {
+    "charges": 10.0,
+    "closing": 5590.0,
+    "count": 6,
+    "fulizaDrawn": 0.0,
+    "fulizaRepaid": 0.0,
+    "guessed": 0,
+    "mismatches": 0,
+    "mobile": "254700000000",
+    "name": "AMANI TESTER",
+    "opening": 2500.0,
+    "pdfTotals": {
+     "in": 8000.0,
+     "out": 4910.0
+    },
+    "period": "01 Aug 2026 - 31 Aug 2026",
+    "totalIn": 8000.0,
+    "totalOut": 4910.0
+   }
+  },
   "fuliza.pdf": {
    "pages": 2,
    "password": false,

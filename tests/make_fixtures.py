@@ -502,6 +502,16 @@ def summary(rows, spec_list, mismatches=0):
     )
 
 
+def fixed(opening, items):
+    """Rows written out by hand: (time, receipt, details, type, paid, out, counterparty, number, account), in cents."""
+    bal, rows = opening, []
+    for ts, rc, details, typ, paid, out, party, pid, acct in items:
+        bal += paid - out
+        rows.append(dict(receipt=rc, ts=datetime.fromisoformat(ts), details=details, status="Completed", paid=paid, out=out,
+                         balance=bal, type=typ, party=party, partyId=pid, account=acct))
+    return rows
+
+
 def person(spec):
     return dict(customer="AMANI TESTER", mobile="254700000000", email="amani.tester@example.com", **spec)
 
@@ -573,6 +583,20 @@ def build(out_dir):
 
     rows = generate(16, "2026-07-01", "2026-08-01", 10, 410000)
     statement(dict(name="locked", period="01 Jul 2026 - 31 Jul 2026", requested="01 Aug 2026"), rows, password=PASSWORD)
+
+    # Details that use the words of a page footer ("Safaricom PLC", "customer care"), on a row's first line and on a
+    # wrapped line, must come out exactly as printed. The paybill and till numbers here are invented.
+    rows = fixed(250000, [
+        ("2026-08-02 09:15:00", "ZQD0000001", "Funds received from 0700***301 - WANJIRU TESTER", "Received money", 600000, 0, "WANJIRU TESTER", "0700***301", ""),
+        ("2026-08-05 12:30:00", "ZQD0000002", "Pay Bill to 299001 - SAFARICOM PLC", "Paybill", 0, 150000, "SAFARICOM PLC", "299001", ""),
+        ("2026-08-05 12:30:00", "ZQD0000002", "Pay Bill Charge", "Transaction charge", 0, 1000, "", "", ""),
+        ("2026-08-09 18:45:00", "ZQD0000003", "Pay Bill Online to 299002 - HOME FIBRE BY SAFARICOM PLC Acc. 0700000001", "Paybill", 0, 290000,
+         "HOME FIBRE BY SAFARICOM PLC", "299002", "0700000001"),
+        ("2026-08-12 08:05:00", "ZQD0000004", "Pay Bill Online to 400500 - SAMPLE INSURANCE CUSTOMER CARE DESK Acc. 12345678", "Paybill", 0, 50000,
+         "SAMPLE INSURANCE CUSTOMER CARE DESK", "400500", "12345678"),
+        ("2026-08-25 10:10:00", "ZQD0000005", "Funds received from 0700***302 - OTIENO SAMPLE", "Received money", 200000, 0, "OTIENO SAMPLE", "0700***302", ""),
+    ])
+    statement(dict(name="details_as_printed", period="01 Aug 2026 - 31 Aug 2026", requested="01 Sep 2026"), rows)
 
     files["scanned.pdf"] = pdf_document("scanned", [["q 595 0 0 842 0 0 cm /Im1 Do Q\n"]], image=scanned_page())
     expect["statements"]["scanned.pdf"] = dict(pages=1, password=False, error="no text layer")
