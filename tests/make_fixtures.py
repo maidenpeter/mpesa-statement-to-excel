@@ -333,6 +333,13 @@ class NoSplit(Exception):
 X = dict(receipt=30, time=95, details=175, status=345, paid=405, withdrawn=465, balance=525)
 RIGHT = dict(paid=458, withdrawn=518, balance=578)
 LEAD, ROW_GAP, BOTTOM, WRAP = 8.5, 14.5, 72, 40
+STANDARD = dict(x=X, right=RIGHT, wrap=WRAP, time_lines=1, centre=None)
+# Closer to many generated PDF tables: each heading centred over its column, a narrow Details column whose text
+# starts at the column's left edge (well left of its heading), and the completion time on two lines.
+CENTRED = dict(x=dict(receipt=33, time=95, details=163, status=333, paid=391, withdrawn=455, balance=519),
+               right=dict(paid=449, withdrawn=513, balance=577), wrap=30, time_lines=2,
+               centre=dict(receipt=(30, 92), time=(92, 160), details=(160, 330), status=(330, 388), paid=(388, 452),
+                           withdrawn=(452, 516), balance=(516, 580)))
 
 
 def money(c):
@@ -350,11 +357,15 @@ def wrap(s, n=WRAP):
     return lines + [cur]
 
 
-def table_header(y):
+def table_header(y, lay=STANDARD):
     ops = [rule(30, y + 9, 580, 0.6, 0.3)]
     for key, label in [("receipt", "Receipt No."), ("time", "Completion Time"), ("details", "Details"),
                        ("status", "Transaction Status"), ("paid", "Paid In"), ("withdrawn", "Withdrawn"), ("balance", "Balance")]:
-        ops.append(text(X[key], y, label, bold=True))
+        if lay["centre"]:  # centred over the column (bold Helvetica is about 4.1pt a character at 7pt)
+            left, right = lay["centre"][key]
+            ops.append(text((left + right) / 2 - len(label) * 2.05, y, label, bold=True))
+        else:
+            ops.append(text(lay["x"][key], y, label, bold=True))
     ops.append(rule(30, y - 4, 580, 0.6, 0.3))
     return ops
 
@@ -362,6 +373,7 @@ def table_header(y):
 def render(spec, listing, total_in, total_out):
     """listing: rows as printed, newest first. Returns pages (lists of drawing operations)."""
     pages, ops = [], []
+    lay = spec.get("layout", STANDARD)
     ops.append(text(30, 805, "M-PESA STATEMENT", 12, True))
     for i, (label, value) in enumerate([("Customer Name:", spec["customer"]), ("Mobile Number:", spec["mobile"]),
                                         ("Email Address:", spec["email"]), ("Statement Period:", spec["period"]),
@@ -383,38 +395,38 @@ def render(spec, listing, total_in, total_out):
     ops += [rule(30, y + 7, 430), text(30, y - 2, "TOTAL:", 7, True), rtext(330, y - 2, money(total_in), 7, True),
             rtext(430, y - 2, money(total_out), 7, True)]
     ops.append(text(30, 585, "DETAILED STATEMENT", 9, True))
-    ops += table_header(566)
+    ops += table_header(566, lay)
     y, split_done = 552, False
     first_row_y = {True: 552, False: 791}
 
     def new_page():
         nonlocal ops, y
         pages.append(ops)
-        ops = table_header(805)
+        ops = table_header(805, lay)
         y = first_row_y[False]
 
     for r in listing:
-        lines = wrap(r["details"])
-        k = len(lines)
+        lines = wrap(r["details"], lay["wrap"])
+        k = max(len(lines), lay["time_lines"])
         bottom = y - (k - 1) * LEAD
         if bottom < BOTTOM:
             fit = int((y - BOTTOM) // LEAD) + 1
             if spec.get("split") and not split_done and k >= 2 and 1 <= fit < k:
                 # a row that runs over the page break: its first lines here, the rest at the top of the next page
                 split_done = True
-                draw_row(ops, r, lines[:fit], y, "top")
+                draw_row(ops, r, lines[:fit], y, "top", lay)
                 rest = lines[fit:]
                 spec["split_row"] = dict(receipt=r["receipt"], time=r["ts"].strftime("%Y-%m-%d %H:%M:%S"), page=len(pages) + 1,
                                          lines_here=fit, lines_on_next_page=len(rest))
                 new_page()
                 for i, line in enumerate(rest):
-                    ops.append(text(X["details"], y - i * LEAD, line))
+                    ops.append(text(lay["x"]["details"], y - i * LEAD, line))
                 y -= (len(rest) - 1) * LEAD + ROW_GAP
                 ops.append(rule(30, y + ROW_GAP / 2 + 2, 580, 0.3, 0.8))
                 continue
             new_page()
             bottom = y - (k - 1) * LEAD
-        draw_row(ops, r, lines, y, spec.get("align", "top"))
+        draw_row(ops, r, lines, y, spec.get("align", "top"), lay)
         y = bottom - ROW_GAP
         ops.append(rule(30, y + ROW_GAP / 2 + 2, 580, 0.3, 0.8))
     if spec.get("split") and not split_done:
@@ -427,18 +439,23 @@ def render(spec, listing, total_in, total_out):
     return pages
 
 
-def draw_row(ops, r, lines, y, align):
-    k = len(lines)
+def draw_row(ops, r, lines, y, align, lay=STANDARD):
+    k = max(len(lines), lay["time_lines"])
     cy = y if align == "top" else y - (k - 1) * LEAD / 2
+    X_, R_ = lay["x"], lay["right"]
     for i, line in enumerate(lines):
-        ops.append(text(X["details"], y - i * LEAD, line))
-    ops += [text(X["receipt"], cy, r["receipt"]), text(X["time"], cy, r["ts"].strftime("%Y-%m-%d %H:%M:%S")),
-            text(X["status"], cy, r["status"])]
+        ops.append(text(X_["details"], y - i * LEAD, line))
+    ops.append(text(X_["receipt"], cy, r["receipt"]))
+    if lay["time_lines"] == 2:  # the date on one line, the time under it
+        ops += [text(X_["time"], cy, r["ts"].strftime("%Y-%m-%d")), text(X_["time"], cy - LEAD, r["ts"].strftime("%H:%M:%S"))]
+    else:
+        ops.append(text(X_["time"], cy, r["ts"].strftime("%Y-%m-%d %H:%M:%S")))
+    ops.append(text(X_["status"], cy, r["status"]))
     if r["paid"]:
-        ops.append(rtext(RIGHT["paid"], cy, money(r["paid"])))
+        ops.append(rtext(R_["paid"], cy, money(r["paid"])))
     if r["out"]:
-        ops.append(rtext(RIGHT["withdrawn"], cy, "-" + money(r["out"])))
-    ops.append(rtext(RIGHT["balance"], cy, money(r["balance"])))
+        ops.append(rtext(R_["withdrawn"], cy, "-" + money(r["out"])))
+    ops.append(rtext(R_["balance"], cy, money(r["balance"])))
 
 
 def listing_order(rows, invert_pairs=False):
@@ -597,6 +614,14 @@ def build(out_dir):
         ("2026-08-25 10:10:00", "ZQD0000005", "Funds received from 0700***302 - OTIENO SAMPLE", "Received money", 200000, 0, "OTIENO SAMPLE", "0700***302", ""),
     ])
     statement(dict(name="details_as_printed", period="01 Aug 2026 - 31 Aug 2026", requested="01 Sep 2026"), rows)
+
+    # headings centred over their columns, details starting well left of their heading, the time on two lines
+    rows = generate(17, "2026-09-01", "2026-10-01", 16, 420000)
+    statement(dict(name="centred_headings", period="01 Sep 2026 - 30 Sep 2026", requested="01 Oct 2026", layout=CENTRED), rows)
+    # the same, with each row's other cells centred on its wrapped details
+    rows = generate(18, "2026-10-01", "2026-11-01", 16, 380000)
+    statement(dict(name="centred_middle", period="01 Oct 2026 - 31 Oct 2026", requested="01 Nov 2026", layout=CENTRED,
+                   align="middle"), rows)
 
     files["scanned.pdf"] = pdf_document("scanned", [["q 595 0 0 842 0 0 cm /Im1 Do Q\n"]], image=scanned_page())
     expect["statements"]["scanned.pdf"] = dict(pages=1, password=False, error="no text layer")
