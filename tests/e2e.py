@@ -345,6 +345,35 @@ def phones_and_themes(browser, base, devices):
         check(not away and not pg.evaluate("window.__csp") and not errs, f"{dev}: nothing leaves the origin, no policy violations or errors {away} {errs[:2]}")
         ctx.close()
 
+    # the site's navigation, as on every other page of the site (written by its tools/kenya_nav.py)
+    s = Session(browser, base)
+    p = s.page
+    links = p.eval_on_selector_all(".mp-side .mp-nav a", "els => els.map(a => [a.textContent.trim(), a.getAttribute('href'), a.getAttribute('aria-current')])")
+    hrefs = {h for _, h, _ in links}
+    check({"https://maidenpeter.github.io/", "https://maidenpeter.github.io/ask/", "https://maidenpeter.github.io/about/",
+           "https://maidenpeter.github.io/#contact"} <= hrefs, f"navigation: the side bar leads to Home, Ask the data, About and Contact")
+    here = [t for t, h, c in links if c == "page"]
+    check(here == ["01Statement to Excel"], f"navigation: this page is marked in the side bar {here}")
+    back = p.get_attribute(".mp-back", "href")
+    check(back == "https://maidenpeter.github.io/#mpesa-series", f"navigation: Back goes to the M-Pesa series ({back})")
+    where = " ".join(p.inner_text(".mp-where").split())
+    check(where.upper() == "I DATA ANALYSIS / M-PESA SERIES", f"navigation: the top bar says where the page sits ('{where}')")
+    side = p.eval_on_selector(".mp-side", "e => e.getBoundingClientRect().right")
+    main_left = p.eval_on_selector("main", "e => e.getBoundingClientRect().left")
+    check(p.is_visible(".mp-side") and side <= main_left + 1, f"navigation: the side bar sits beside the tool, not over it ({side} / {main_left})")
+    s.close()
+    ctx = browser.new_context(**devices["Pixel 7"])
+    pg = ctx.new_page()
+    pg.goto(base + "/", wait_until="networkidle")
+    bar = pg.eval_on_selector(".mp-side .mp-nav", "e => { const r = e.getBoundingClientRect(); return [r.top, r.bottom, innerHeight] }")
+    check(bar[1] >= bar[2] - 1 and bar[0] > bar[2] / 2, f"navigation on a phone: the site's bar along the bottom ({bar})")
+    pg.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+    pg.wait_for_timeout(300)
+    last = pg.eval_on_selector("footer", "e => e.getBoundingClientRect().bottom")
+    top = pg.eval_on_selector(".mp-side .mp-nav", "e => e.getBoundingClientRect().top")
+    check(last <= top + 1, f"navigation on a phone: the end of the page scrolls clear of the bar ({last} / {top})")
+    ctx.close()
+
     # the theme switch: ink by default, paper one click away, remembered as on the site
     s = Session(browser, base)
     p = s.page

@@ -65,6 +65,10 @@ Scanned or photographed statements have no text layer and cannot be read; the pa
 - The types come from the wording of the Details column. New transaction descriptions fall into "Other money in" or "Other money out" until a rule is added in `lib/parser.js`.
 - The tests run on synthetic statements, which copy the structure of a real statement but cannot cover every variation.
 
+## The site's navigation
+
+The top bar, side bar and phone bar are the same as on every other page of https://maidenpeter.github.io. They are written by `tools/kenya_nav.py` in the site's repository: the markup into `index.html` between the `mp-nav` markers, and the CSS and script into `lib/nav.css` and `lib/nav.js` (as files, since the content security policy allows no inline CSS or script). Change the navigation there and run that script again, rather than editing these files.
+
 ## Run it locally
 
 PDF.js needs the page served over HTTP, not opened as a file:

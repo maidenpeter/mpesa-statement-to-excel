@@ -1,4 +1,4 @@
-/* M-Pesa Statement to Excel, in the look of maidenpeter.github.io: ink (the default) or paper, gold for emphasis,
+/* M-Pesa Statement to Excel, in the look of maidenpeter.github.io (the navigation itself is lib/nav.css, the site's own): ink (the default) or paper, gold for emphasis,
    teal for money in, oxblood for money out, engraved double rules round every plate. The fonts are copied into
    fonts/ (see THIRD_PARTY_NOTICES.md), because the page loads nothing from any other origin. */
 @font-face{font-family:"EB Garamond";src:url(../fonts/eb-garamond-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
@@ -28,7 +28,6 @@
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .93 0 0 0 0 .90 0 0 0 0 .84 0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --fox:rgba(0,0,0,.30);
-  --mp-top:68px;
 }
 :root[data-theme="light"]{
   color-scheme:light;
@@ -44,44 +43,14 @@
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--mp-top) + 16px)}
-body{margin:0;padding-top:var(--mp-top);background-color:var(--ground);background-image:var(--grain);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.5;font-variant-numeric:lining-nums;-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
+body{margin:0;background-color:var(--ground);background-image:var(--grain);color:var(--ink);font-family:var(--ui);font-size:16px;line-height:1.5;font-variant-numeric:lining-nums;-webkit-font-smoothing:antialiased;overflow-wrap:break-word}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 50% 42%,transparent 58%,var(--fox) 100%)}
 main{position:relative;z-index:1}
 a{color:var(--accent);text-underline-offset:.16em;text-decoration-thickness:1px}
 a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
-.skip{position:absolute;left:-9999px;top:8px;background:var(--surface);color:var(--ink);padding:8px 12px;border:1px solid var(--rule);z-index:60}
-.skip:focus{left:12px}
 .num{font-variant-numeric:tabular-nums lining-nums}
 .nw{white-space:nowrap}
-
-/* the top bar, as on the site: where the reader is, the seal, name and role in the middle, then the switches */
-.mp-top{position:fixed;top:0;left:0;right:0;z-index:35;height:var(--mp-top);display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-areas:"where brand tools";align-items:center;column-gap:18px;padding:0 22px;background-color:var(--ground);background-image:var(--grain);border-bottom:3px double var(--rule-strong);box-shadow:0 10px 24px -18px rgba(0,0,0,.6)}
-.mp-top *{box-sizing:border-box}
-.mp-ic{flex:none;display:block;width:22px;height:22px}
-.mp-where{grid-area:where;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:1px 9px;line-height:1.3;white-space:nowrap;overflow:hidden;font-family:var(--label);font-size:13px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
-.mp-wc{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2);text-decoration:none}
-a.mp-wc:hover{color:var(--accent)}
-span.mp-wc{color:var(--ink)}
-.mp-wn{flex:none;margin-right:4px;font-family:var(--display);font-weight:400;font-size:18px;line-height:1;letter-spacing:0;text-transform:none;color:var(--accent)}
-.mp-ws{flex:none;color:var(--rule-strong);font-family:var(--serif);font-size:16px;letter-spacing:0}
-.mp-brand{grid-area:brand;display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
-.mp-who{display:flex;flex-direction:column;gap:1px;min-width:0}
-.mp-nm{font-family:var(--display-sc);font-weight:400;font-size:23px;line-height:1.05;letter-spacing:.02em;white-space:nowrap;color:var(--ink);transition:color .2s}
-.mp-role{font-family:var(--script);font-size:19px;line-height:1.1;white-space:nowrap;color:var(--accent)}
-.mp-seal{flex:none;display:block;width:48px;height:48px;color:var(--accent);overflow:visible}
-.mp-seal text{font-family:var(--display-sc);font-size:21px;fill:var(--ink);letter-spacing:0}
-.mp-beads{transform-origin:32px 32px;transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
-.mp-brand:hover .mp-beads{transform:rotate(42deg)}
-.mp-brand:hover .mp-nm{color:var(--accent)}
-.mp-tools{grid-area:tools;justify-self:end;display:flex;align-items:center;gap:8px}
-.mp-theme,.mp-gh{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:var(--ui);font-size:15px;line-height:1.2;white-space:nowrap;color:var(--ink-2);text-decoration:none;background:transparent;border:1px solid var(--rule);border-radius:2px;padding:6px 12px;min-height:40px;cursor:pointer}
-.mp-gh{width:40px;padding:0}
-.mp-gh .mp-l{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.mp-theme:hover,.mp-gh:hover{border-color:var(--accent);color:var(--ink)}
-.mp-theme[hidden]{display:none}
-.mp-top a:focus-visible,.mp-top button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.mp-beads,.mp-nm{transition:none}}
 
 /* the page */
 .wrap{max-width:1080px;margin:0 auto;padding:clamp(28px,4vw,48px) 20px 72px;display:flex;flex-direction:column;gap:28px}
@@ -194,23 +163,6 @@ tr.bad td{background:var(--shade)}
 footer{display:grid;gap:8px;max-width:78ch;margin-top:12px;border-top:3px double var(--rule-strong);padding-top:20px;color:var(--ink-2);font-size:14.5px}
 footer b{color:var(--ink);font-weight:600}
 
-/* narrower: the theme switch shows its icon only */
-@media (min-width:861px) and (max-width:1060px){.mp-theme .mp-l{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.mp-theme{width:40px;padding:0}}
-/* phones and small tablets: the site's two-row top bar */
-@media (max-width:860px){
-  :root{--mp-top:88px}
-  .mp-top{grid-template-columns:40px minmax(0,1fr) 40px;grid-template-rows:56px minmax(0,1fr);grid-template-areas:"theme brand gh" "where where where";column-gap:10px;padding:0 12px}
-  .mp-tools{display:contents}
-  .mp-theme{grid-area:theme;width:40px;padding:0}
-  .mp-gh{grid-area:gh}
-  .mp-theme .mp-l{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  .mp-brand{justify-self:center;min-width:0;gap:10px}
-  .mp-seal{width:42px;height:42px}
-  .mp-nm{font-size:20px}
-  .mp-role{font-size:16px}
-  .mp-where{justify-content:center;align-self:stretch;row-gap:0;line-height:1.2;font-size:12px;letter-spacing:.08em;border-top:1px solid var(--rule-soft)}
-  .mp-wn{font-size:15px;margin-right:2px}
-}
 @media (max-width:560px){
   .wrap{padding:24px 14px 56px;gap:22px}
   .card{padding:16px}
@@ -220,8 +172,7 @@ footer b{color:var(--ink);font-weight:600}
   .actions{width:100%}
   .actions .btn.primary{flex:1}
   .file .retry input{width:100%}
-  .mp-where .mp-wc:first-child{display:none}
-  .mp-where .mp-ws:first-of-type{display:none}
 }
-@media (max-width:360px){.mp-nm{font-size:18px}.mp-role{font-size:15px}.mp-seal{width:38px;height:38px}}
-@media print{.mp-top,body::before{display:none}body{padding-top:0;background-image:none}}
+/* phones: the site's navigation bar sits along the bottom, so messages show above it */
+@media (max-width:860px){.toast{bottom:calc(76px + env(safe-area-inset-bottom))}}
+@media print{body::before{display:none}body{background-image:none}}
