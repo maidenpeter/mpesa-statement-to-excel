@@ -61,7 +61,8 @@
         <h3>Transactions</h3>
         <div class="filters">
           <input id="q" type="search" placeholder="Search details, name, number or receipt">
-          <select id="typeFilter"><option value="">All types</option></select>
+          <select id="dirFilter" aria-label="Money in or out"><option value="">Money in and out</option><option value="in">Money in</option><option value="out">Money out</option></select>
+          <select id="typeFilter" aria-label="Transaction type"><option value="">All types</option></select>
           <span class="count" id="count"></span>
         </div>
         <div class="tablebox">

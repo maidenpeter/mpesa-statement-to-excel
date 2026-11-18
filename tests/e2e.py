@@ -28,7 +28,7 @@ FIX = ROOT / "tests" / "fixtures" / "synthetic"
 OUT = ROOT / "tests" / "output"
 EXPECT = json.loads((FIX / "expected.json").read_text())
 PASSWORD = EXPECT["password"]
-SHEETS = ["Summary", "Transactions", "Monthly", "Counterparties"]
+SHEETS = ["Summary", "Transactions", "Money in", "Money out", "Monthly", "Counterparties"]
 KPI = {"Money in": "totalIn", "Money out": "totalOut", "Opening balance": "opening", "Closing balance": "closing",
        "Charges & fees": "charges", "Fuliza drawn": "fulizaDrawn"}
 
@@ -175,7 +175,39 @@ def check_workbook(label, name, data, e, rows, files=1):
     mo = wb["Monthly"]
     months = [r for r in mo.iter_rows(min_row=2, values_only=True) if r[0] not in (None, "Total")]
     check(sum(r[1] for r in months) == e["count"], f"{label}: monthly counts add up")
+    # Money in and Money out: every transaction in that direction, its total and the tie to the Summary
+    for sheet, key, total in [("Money in", "paidIn", "totalIn"), ("Money out", "withdrawn", "totalOut")]:
+        ws = wb[sheet]
+        want = [x for x in rows if x[key] > 0]
+        head = [c.value for c in ws[1]]
+        check(head[:10] == ["Date & time", "Receipt No.", "Details", "Type", "Counterparty", "Phone / Till / Paybill", "Account",
+                            sheet, "Balance after", "Balance check"], f"{label}: {sheet} columns")
+        got = [[c.value for c in r] for r in ws.iter_rows(min_row=2, max_row=len(want) + 1)]
+        check([g[1] for g in got] == [x["receipt"] for x in want] and [g[2] for g in got] == [x["details"] for x in want],
+              f"{label}: {sheet} lists its {len(want)} transactions with their details")
+        check(all(abs(g[7] - x[key]) < 0.005 and abs(g[8] - x["balance"]) < 0.005 for g, x in zip(got, want)),
+              f"{label}: {sheet} amounts and balances")
+        tot = [c.value for c in ws[len(want) + 2]]
+        tie = [c.value for c in ws[len(want) + 3]]
+        check(tot[6] == f"Total ({len(want)} transactions)" and abs(tot[7] - e[total]) < 0.005, f"{label}: {sheet} total {tot[7]}")
+        check(tie[7] == "OK", f"{label}: {sheet} ties to the Summary")
+        formula = openpyxl.load_workbook(io.BytesIO(data))[sheet].cell(len(want) + 3, 8).value
+        check(str(formula).startswith("=IF(ROUND(SUM(H2:H") and ("Summary!C11" if key == "paidIn" else "Summary!C12") in formula,
+              f"{label}: {sheet} tie is a live formula on the Summary's {sheet.lower()}")
     return wb
+
+
+def check_direction(s, label, e, rows):
+    """The page's Money in / Money out filter lists one direction and shows its total."""
+    for value, key, total in [("in", "paidIn", "totalIn"), ("out", "withdrawn", "totalOut")]:
+        s.page.select_option("#dirFilter", value)
+        n = sum(1 for x in rows if x[key] > 0)
+        shown = len(s.page.query_selector_all("#tx tbody tr"))
+        count = s.page.inner_text("#count")
+        check(shown == min(n, 300) and f"{value} {e[total]:,.2f}" in count, f"{label}: money {value} filter lists {shown} and shows '{count}'")
+    s.page.select_option("#dirFilter", "")
+    count = s.page.inner_text("#count")
+    check(f"in {e['totalIn']:,.2f} | out {e['totalOut']:,.2f}" in count, f"{label}: all rows show both totals '{count}'")
 
 
 def check_csv(label, name, data, e):
@@ -210,6 +242,7 @@ def run(browser, base, readme_shot):
         msgs = s.file_messages()
         check(msgs[0][0] == "file " and msgs[0][1].startswith(f"{e['summary']['count']:,} transactions"), f"{name}: file line '{msgs[0][1]}'")
         check_results(s, name, e["summary"])
+        check_direction(s, name, e["summary"], e["rows"])
         xn, xb = s.download("#dlXlsx")
         check_workbook(name, xn, xb, e["summary"], e["rows"])
         cn, cb = s.download("#dlCsv")

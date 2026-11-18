@@ -16,11 +16,13 @@ Drop in one or more statements. The page lists every transaction with its type a
 - **A type for each row**, read from the details: send money, received money, paybill, buy goods, agent withdrawal and deposit, airtime and bundles, transaction charges, Fuliza drawn, Fuliza repaid and Fuliza fees, M-Shwari, business payments in, reversals and a few more. Anything it does not recognise is kept as "Other money in" or "Other money out".
 - **The counterparty**: the name, the phone, till or paybill number, and the account number for paybill payments.
 - **Several statements at once.** Rows that appear in more than one statement (same receipt, time, details, amounts and balance) are kept once, so overlapping downloads can be combined.
-- **The workbook** has four sheets:
+- **The workbook** has six sheets:
   - Summary: the account, the period, the key figures and a table by type, all as live formulas, and the data checks;
   - Transactions: every row, filterable, with a balance check column and a totals row;
+  - Money in and Money out: every transaction in that direction with its details (time, receipt, details, type, counterparty, number, account, amount, balance after and balance check), so each side can be checked line by line. The total follows any filter, and a formula under it checks the sheet against the Summary's money in or money out;
   - Monthly: money in and out, charges, Fuliza drawn and the closing balance for each month;
   - Counterparties: who money went to and came from.
+- **On the page**, the transaction list can be narrowed to money in or money out, by type, or by a search, and it shows the money in and out of whatever is listed.
 - **A CSV** of the transactions, marked as UTF-8 so Excel reads it correctly.
 
 ## Private by design
