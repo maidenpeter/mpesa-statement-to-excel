@@ -24,6 +24,7 @@ Add one or more statements, on a computer or a phone. The page lists every trans
   - Counterparties: who money went to and came from.
 - **On the page**, the transaction list can be narrowed to money in or money out, to the rows that don't reconcile, by type, or by a search, and it shows the money in and out of whatever is listed. Each type in the By type table opens its own transactions, and a warning about rows that don't reconcile has a link that lists them.
 - **A CSV** of the transactions, marked as UTF-8 so Excel reads it correctly.
+- **Ask about your statement.** Questions to click, a person or a kind of transaction to choose, or a question to type: where the money went, who you paid and who paid you the most, charges and fees, Fuliza, the biggest payments, the month you spent the most, the lowest balance, whether every balance adds up, and what went to or came from any one name. Each answer is a calculation on your statement's rows, in your browser, with the transactions behind it listed under it; there is no language model, and a typed question that matches none of these gets no answer rather than a guess.
 
 ## Private by design
 
@@ -61,7 +62,7 @@ Scanned or photographed statements have no text layer and cannot be read; the pa
 
 ## Known limits
 
-- The parser reads the statement's layout: the column headings (Receipt No., Completion Time, Details, Transaction Status, Paid In, Withdrawn, Balance) and where each value sits on the page. If Safaricom changes that layout, the parser will need an update. The balance check makes a misread visible rather than silent.
+- The parser reads the statement's layout: the column headings (Receipt No., Completion Time, Details, Transaction Status, Paid In, Withdrawn, Balance) and where each value sits on the page. It takes the edges of the Details column from the rows themselves, so a heading may sit anywhere over its column. If Safaricom changes the layout more than that, the parser will need an update. The balance check makes a misread visible rather than silent.
 - The types come from the wording of the Details column. New transaction descriptions fall into "Other money in" or "Other money out" until a rule is added in `lib/parser.js`.
 - The tests run on synthetic statements, which copy the structure of a real statement but cannot cover every variation.
 
@@ -92,6 +93,8 @@ Then open http://localhost:8000.
 | `balance_break.pdf` | One payment missing from the rows but counted in the summary's TOTAL |
 | `locked.pdf` | Password-protected (the password, `TEST1234`, is in `expected.json`) |
 | `details_as_printed.pdf` | Payments whose details use a page footer's words ("Safaricom PLC", "customer care"), on a row's first line and on a wrapped line; every detail must come out exactly as printed |
+| `centred_headings.pdf` | Headings centred over their columns, a narrow Details column whose text starts well left of its heading, and the date and time on two lines |
+| `centred_middle.pdf` | The same layout, with each row's other cells centred on its wrapped details |
 | `scanned.pdf` | An image with no text layer |
 
 The tests:
@@ -99,7 +102,7 @@ The tests:
 ```
 python tests/check_text.py            # plain ASCII, no flagged phrases (the vendored builds are left out)
 python tests/make_fixtures.py --check # the committed statements match a fresh build
-node --test tests/parser.test.mjs     # PDF.js and the parser on every statement, row by row
+node --test tests/parser.test.mjs tests/ask.test.mjs   # PDF.js, the parser and the questions on every statement
 pip install playwright openpyxl && python -m playwright install chromium
 python tests/e2e.py                   # the page in a browser, end to end
 ```

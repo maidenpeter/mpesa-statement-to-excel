@@ -16,8 +16,8 @@ jobs:
         run: python tests/check_text.py
       - name: The synthetic statements match a fresh build
         run: python tests/make_fixtures.py --check
-      - name: Parser on every synthetic statement (the shipped pdf.js, in Node)
-        run: node --test tests/parser.test.mjs
+      - name: Parser and Ask on every synthetic statement (the shipped pdf.js, in Node)
+        run: node --test tests/parser.test.mjs tests/ask.test.mjs
       - name: Browser
         run: |
           pip install playwright==1.58.0 openpyxl==3.1.5

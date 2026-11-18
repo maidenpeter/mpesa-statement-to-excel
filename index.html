@@ -81,6 +81,25 @@
     <div class="card plate kpis" id="kpis"></div>
     <div class="checks" id="checks"></div>
 
+    <section class="card plate ask" id="ask" aria-labelledby="h-ask">
+      <h3 id="h-ask">Ask about your statement</h3>
+      <p class="ask-note">Answered in this browser from the transactions above, by calculation. Nothing is sent anywhere, and every answer lists the transactions behind it.</p>
+      <form class="ask-form" id="askForm">
+        <input id="askText" type="search" autocomplete="off" placeholder="Type a question, for example: how much did I pay in fees?" aria-label="Type a question about your statement">
+        <button class="btn small" type="submit">Ask</button>
+      </form>
+      <div class="ask-chips" id="askChips"></div>
+      <div class="ask-pick">
+        <label for="askParty">Someone you paid, or who paid you</label>
+        <select id="askParty"></select>
+        <button type="button" class="btn small" id="askPartyGo">Ask</button>
+        <label for="askType">A kind of transaction</label>
+        <select id="askType"></select>
+        <button type="button" class="btn small" id="askTypeGo">Ask</button>
+      </div>
+      <div class="ask-thread" id="askThread" aria-live="polite"></div>
+    </section>
+
     <div class="grid2">
       <div class="card plate">
         <h3>By type</h3>
@@ -120,6 +139,7 @@
 <script src="lib/exceljs.min.js"></script>
 <script src="lib/parser.js"></script>
 <script src="lib/excel.js"></script>
+<script src="lib/ask.js"></script>
 <script src="lib/app.js"></script>
 <script src="lib/nav.js"></script>
 </body>

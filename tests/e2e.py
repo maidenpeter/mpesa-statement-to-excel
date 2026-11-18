@@ -73,7 +73,7 @@ class Session:
         self.ctx.add_init_script(CSP_INIT)
         self.ctx.on("request", lambda r: self.requests.append(r.url))
         self.page = self.ctx.new_page()
-        self.page.on("console", lambda m: self.console.append((m.type, m.text)))
+        self.page.on("console", lambda m: self.console.append((m.type, m.text + ((" @ " + (m.location or {}).get("url", "")) if m.type == "error" else ""))))
         self.page.on("pageerror", lambda e: self.errors.append(str(e)))
         self.page.goto(base + "/", wait_until="networkidle")
 
@@ -103,10 +103,14 @@ class Session:
         return d.value.suggested_filename, Path(d.value.path()).read_bytes()
 
     def csp(self):
-        return self.page.evaluate("window.__csp")
+        return self._csp if self.ctx is None else self.page.evaluate("window.__csp")
 
     def close(self):
-        self.ctx.close()
+        """Close the window once its checks are done, keeping what it recorded for the checks at the end."""
+        if self.ctx is not None:
+            self._csp = self.page.evaluate("window.__csp")
+            self.ctx.close()
+            self.ctx = None
 
 
 def check_results(s, label, e):
@@ -271,6 +275,43 @@ def check_line_estimate():
         check(not short, f"{col}: the workbook's line count covers what Excel draws in Calibri ({len(texts)} texts) {short[:2]}")
 
 
+def fmt_ksh(v):
+    return f"KSh {v:,.2f}"
+
+
+def check_ask(s, label, e, rows):
+    """Ask about your statement: questions to click, a person to choose, a question to type, and the rows behind each."""
+    p = s.page
+    chips = p.query_selector_all("#askChips [data-ask]")
+    check(len(chips) == 10, f"{label}: ask offers {len(chips)} questions to click")
+    charges = round(sum(x["withdrawn"] for x in rows if x["type"] in ("Transaction charge", "Fuliza fee")), 2)
+    p.click("#askChips [data-ask='charges']")
+    first = p.inner_text("#askThread .ask-a")
+    check((fmt_ksh(charges) in first) if charges else ("No charges" in first), f"{label}: ask about charges gives {fmt_ksh(charges)}")
+    people = {}
+    for x in rows:
+        if x["party"]:
+            people.setdefault(x["party"].upper() + "|" + x["partyId"], []).append(x)
+    key, mine = max(people.items(), key=lambda kv: (len(kv[1]), kv[0]))
+    p.select_option("#askParty", key)
+    p.click("#askPartyGo")
+    a = p.query_selector("#askThread .ask-a")
+    out = round(sum(x["withdrawn"] for x in mine), 2)
+    check(len(a.query_selector_all("tbody tr")) == len(mine) and fmt_ksh(out) in a.inner_text(),
+          f"{label}: ask about {mine[0]['party']} lists its {len(mine)} transactions and {fmt_ksh(out)} out")
+    a.query_selector(".ask-show").click()
+    shown = len(p.query_selector_all("#tx tbody tr"))
+    check(shown == min(len(mine), 300), f"{label}: 'show these' lists the {shown} transactions in the list")
+    p.fill("#q", "")
+    p.fill("#askText", "how much did I pay in fees?")
+    p.press("#askText", "Enter")
+    a = p.inner_text("#askThread .ask-a")
+    check(a.startswith("You asked: how much did I pay in fees?") and "charges and fees" in a.lower(), f"{label}: a typed question is answered")
+    p.fill("#askText", "zzzz qqqq")
+    p.press("#askText", "Enter")
+    check("None of the questions here matches that" in p.inner_text("#askThread .ask-a"), f"{label}: a question that matches nothing gets no answer")
+
+
 def check_direction(s, label, e, rows):
     """The page's Money in / Money out filter lists one direction and shows its total."""
     for value, key, total in [("in", "paidIn", "totalIn"), ("out", "withdrawn", "totalOut")]:
@@ -347,6 +388,7 @@ CONTRAST = """() => {
     return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
   const bad = [];
   document.querySelectorAll('h1,h2,h3,.lede,.eyebrow,.drop strong,.drop > span,.field label,.field small,.file .name,.file .msg,' +
+      '.ask-q,.ask-say,.ask-chip,.ask-note,.ask-pick label,.ask-nums dt,.ask-nums dd,' +
       '.kpi .k,.kpi .v,.check,th,td,.count,.pill,footer div,.btn,.linkish,.mp-wc,.mp-nm,.mp-role,.mp-theme,#resSub').forEach((el) => {
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || !r.height || cs.visibility === 'hidden' || !el.textContent.trim()) return;
@@ -454,6 +496,7 @@ def phones_and_themes(browser, base, devices):
         p.goto(base + "/", wait_until="networkidle")
         p.set_input_files("#fileInput", [str(FIX / "balance_break.pdf"), str(FIX / "locked.pdf")])
         p.wait_for_function(wait, arg=2, timeout=60000)
+        p.click("#askChips [data-ask='where']")
         p.wait_for_timeout(300)
         check(p.get_attribute("html", "data-theme") == theme, f"{theme} theme: set from the stored choice")
         bad = p.evaluate(CONTRAST)
@@ -478,11 +521,14 @@ def run(browser, base, readme_shot, devices):
         check(msgs[0][0] == "file " and msgs[0][1].startswith(f"{e['summary']['count']:,} transactions"), f"{name}: file line '{msgs[0][1]}'")
         check_results(s, name, e["summary"])
         check_direction(s, name, e["summary"], e["rows"])
+        if name in ("clean_month.pdf", "fuliza.pdf", "centred_headings.pdf"):
+            check_ask(s, name, e["summary"], e["rows"])
         xn, xb = s.download("#dlXlsx")
         check_workbook(name, xn, xb, e["summary"], e["rows"])
         check_wrapping(name, xb, e["rows"])
         cn, cb = s.download("#dlCsv")
         check_csv(name, cn, cb, e["summary"])
+        s.close()
 
     # two overlapping statements together
     m = EXPECT["merges"]["overlap"]
