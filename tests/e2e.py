@@ -303,6 +303,20 @@ def check_ask(s, label, e, rows):
     shown = len(p.query_selector_all("#tx tbody tr"))
     check(shown == min(len(mine), 300), f"{label}: 'show these' lists the {shown} transactions in the list")
     p.fill("#q", "")
+    # look up a transaction: the first example (a receipt on this statement), then an amount typed in full
+    ex = p.query_selector_all("#askFind [data-find]")
+    check(len(ex) >= 3, f"{label}: {len(ex)} lookups offered as examples")
+    rc = ex[0].get_attribute("data-find").split()[-1]
+    ex[0].click()
+    a = p.query_selector("#askThread .ask-a")
+    n = sum(1 for x in rows if x["receipt"] == rc)
+    check(len(a.query_selector_all("tbody tr")) == n and rc in a.inner_text(), f"{label}: looking up receipt {rc} lists its {n} rows")
+    big = max((x for x in rows if x["withdrawn"] > 0), key=lambda x: x["withdrawn"])
+    p.fill("#askText", f"payments of {big['withdrawn']:,.2f}")
+    p.press("#askText", "Enter")
+    a = p.query_selector("#askThread .ask-a")
+    n = sum(1 for x in rows if abs(x["withdrawn"] - big["withdrawn"]) < 0.005)
+    check(len(a.query_selector_all("tbody tr")) == n, f"{label}: a typed amount lists the {n} payment(s) of {fmt_ksh(big['withdrawn'])}")
     p.fill("#askText", "how much did I pay in fees?")
     p.press("#askText", "Enter")
     a = p.inner_text("#askThread .ask-a")
@@ -388,7 +402,7 @@ CONTRAST = """() => {
     return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
   const bad = [];
   document.querySelectorAll('h1,h2,h3,.lede,.eyebrow,.drop strong,.drop > span,.field label,.field small,.file .name,.file .msg,' +
-      '.ask-q,.ask-say,.ask-chip,.ask-note,.ask-pick label,.ask-nums dt,.ask-nums dd,' +
+      '.ask-q,.ask-say,.ask-chip,.ask-note,.ask-find-t,.ask-pick label,.ask-nums dt,.ask-nums dd,' +
       '.kpi .k,.kpi .v,.check,th,td,.count,.pill,footer div,.btn,.linkish,.mp-wc,.mp-nm,.mp-role,.mp-theme,#resSub').forEach((el) => {
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || !r.height || cs.visibility === 'hidden' || !el.textContent.trim()) return;

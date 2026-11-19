@@ -98,6 +98,92 @@ test("fuliza.pdf: Fuliza drawn, repaid and its fees", async () => {
   assert.match(Ask.answer("fuliza", none.rows, none.s).say[0], /no Fuliza/);
 });
 
+for (const name of ["clean_month.pdf", "fuliza.pdf", "multi_page.pdf"]) {
+  test(`${name}: lookups by receipt, amount, date, number and direction list exactly the rows that fit`, async () => {
+    const e = EXPECT.statements[name];
+    const { rows, s } = await read(name, e.password ? EXPECT.password : null);
+    const x = e.rows;
+    const find = (text) => {
+      const m = Ask.match(text, rows);
+      assert.ok(m && m.id === "find", `"${text}" is a lookup: ${JSON.stringify(m)}`);
+      return Ask.answer("find", rows, s, m.slot);
+    };
+    const count = (a) => (a.table ? a.table.rows.length : 0);
+    const cap = (n) => Math.min(n, 100);
+
+    // every receipt: its rows, a payment's charge included
+    for (const rc of [...new Set(x.map((r) => r.receipt))].slice(0, 25)) {
+      assert.equal(count(find("find receipt " + rc)), x.filter((r) => r.receipt === rc).length, rc);
+      assert.equal(count(find(rc.toLowerCase())), x.filter((r) => r.receipt === rc).length, rc + " typed in lower case");
+    }
+    // every amount that is not a charge, typed with its cents
+    const amounts = [...new Set(x.filter((r) => !CHARGES.includes(r.type)).map((r) => r.paidIn || r.withdrawn))].slice(0, 25);
+    for (const v of amounts) {
+      const n = x.filter((r) => Math.abs((r.paidIn || r.withdrawn) - v) < 0.005).length;
+      assert.equal(count(find(v.toFixed(2))), cap(n), `amount ${v}`);
+    }
+    // every day, written two ways
+    for (const d of [...new Set(x.map((r) => r.time.slice(0, 10)))].slice(0, 15)) {
+      const n = x.filter((r) => r.time.startsWith(d)).length;
+      assert.equal(count(find("transactions on " + d)), cap(n), d);
+      assert.equal(count(find(`${+d.slice(8)}/${d.slice(5, 7)}/${d.slice(0, 4)}`)), cap(n), d + " as day/month/year");
+      assert.equal(count(find(`what happened on ${+d.slice(8)} ${MONTHS[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}`)), cap(n), d + " in words");
+    }
+    // a full phone number against the masked number the statement prints
+    for (const id of [...new Set(x.map((r) => r.partyId).filter((v) => /^07\d\d\*+\d{3}$/.test(v)))].slice(0, 5)) {
+      const full = id.slice(0, 4) + "123" + id.slice(-3);
+      const a = find(full);
+      assert.equal(count(a), cap(x.filter((r) => r.partyId === id).length), full);
+      assert.ok(a.say.join(" ").includes(id), `${full}: the answer names the number as printed`);
+      assert.equal(count(find("+254" + full.slice(1))), count(a), "+254" + full.slice(1));
+    }
+    // direction and comparisons, with the totals
+    const out = x.filter((r) => r.withdrawn > 1000), inn = x.filter((r) => r.paidIn > 5000), mid = x.filter((r) => r.withdrawn >= 500 && r.withdrawn <= 1000);
+    const a1 = find("payments over 1,000");
+    assert.equal(count(a1), cap(out.length));
+    if (out.length) assert.ok(a1.say[0].includes(fmt(r2(out.reduce((t, r) => t + r.withdrawn, 0)))), a1.say[0]);
+    assert.equal(count(find("received more than 5k")), cap(inn.length));
+    assert.equal(count(find("payments between 500 and 1000")), cap(mid.length));
+    // a month: what was paid out in it
+    const month = x[0].time.slice(0, 7), mm = MONTHS[+month.slice(5) - 1];
+    const spent = x.filter((r) => r.time.startsWith(month) && r.withdrawn > 0);
+    const a2 = find(`how much did I spend in ${mm} ${month.slice(0, 4)}`);
+    assert.equal(count(a2), cap(spent.length));
+    assert.ok(a2.say[0].includes(fmt(r2(spent.reduce((t, r) => t + r.withdrawn, 0)))), a2.say[0]);
+    // an account number on a paybill payment
+    const acc = x.find((r) => r.account);
+    if (acc) assert.equal(count(find(acc.account)), x.filter((r) => r.account === acc.account).length, acc.account);
+    // nothing fits: said so, with the nearest amounts on the statement
+    const none = find("show 98765.43");
+    assert.equal(none.table, null);
+    assert.match(none.say[0], /^No transaction on this statement matches/);
+    assert.match(none.say[1], /^The nearest amounts on it are KSh/);
+    // the examples offered are lookups that find something
+    for (const t of Ask.examples(rows)) {
+      const m = Ask.match(t, rows);
+      assert.ok(m && count(Ask.answer(m.id, rows, s, m.slot)) > 0, `example "${t}" finds rows`);
+    }
+  });
+}
+
+test("lookups leave the other questions alone, and names stay names", async () => {
+  const { rows } = await read("clean_month.pdf");
+  const id = (t) => (Ask.match(t, rows) || {}).id || null;
+  assert.equal(id("what were my 5 biggest payments"), "big-out");
+  assert.equal(id("top 3 people I paid the most"), "top-out");
+  assert.equal(id("which month did I spend the most"), "months");
+  const someone = rows.find((r) => r.type === "Send money" && r.party);
+  const first = someone.party.split(" ")[0].toLowerCase();
+  assert.equal(id("how much did I send to " + first), "party");
+  const m = Ask.match("show payments to " + first, rows);
+  assert.equal(m.id, "find");
+  assert.ok(m.slot.party === someone.party.toUpperCase() + "|" + someone.partyId && m.slot.dir === "out");
+  // a person called June: "to june" is the person, "in june" is the month
+  const june = rows.map((r) => (r === someone ? { ...r, party: "JUNE TESTER", details: r.details.replace(someone.party, "JUNE TESTER") } : r));
+  assert.equal((Ask.match("payments to june", june) || {}).id, "party");
+  assert.deepEqual(Ask.match("payments in june", june).slot.date, { mm: "06" });
+});
+
 test("typed questions find the right answer, and nothing is guessed", async () => {
   const { rows } = await read("clean_month.pdf");
   const id = (t) => (Ask.match(t, rows) || {}).id || null;
