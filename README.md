@@ -1,14 +1,44 @@
-# mpesa-statement-to-excel
+<p align="center">
+  <img src="assets/readme/seal.svg" width="84" alt="">
+</p>
 
-Turn Safaricom M-Pesa PDF statements into a checked Excel workbook, inside your own browser. Nothing is uploaded.
+<h1 align="center">M-Pesa Statement to Excel</h1>
 
-**Open it:** https://maidenpeter.github.io/mpesa-statement-to-excel/
+<p align="center">
+  <b>Turn Safaricom M-Pesa PDF statements into a checked Excel workbook,<br>
+  inside your own browser. Nothing is uploaded.</b>
+</p>
+
+<p align="center">
+  <a href="https://maidenpeter.github.io/mpesa-statement-to-excel/"><b>Open the tool</b></a>
+  &nbsp;|&nbsp; <a href="#what-you-get">What you get</a>
+  &nbsp;|&nbsp; <a href="#private-by-design">Private by design</a>
+  &nbsp;|&nbsp; <a href="#how-it-checks-itself">How it checks itself</a>
+  &nbsp;|&nbsp; <a href="#tests">Tests</a>
+  &nbsp;|&nbsp; <a href="#why-i-built-this">Why I built this</a>
+</p>
+
+<p align="center"><sub>A portfolio project by Marion Peter. Every statement shown here is synthetic: the names and numbers are invented by the tests.</sub></p>
+
+<p align="center">
+  <a href="https://maidenpeter.github.io/mpesa-statement-to-excel/"><img src="assets/readme/hero.webp" width="920" alt="The page after reading the synthetic sample statement: money in and out, net flow, opening and closing balance, charges and Fuliza, with two checks that pass and the Download Excel button"></a>
+</p>
+
+## In one minute
 
 Add one or more statements, on a computer or a phone. The page lists every transaction with its type and counterparty, checks that every balance follows from the one before, compares its totals with the statement's own summary, and gives you a formatted workbook or a CSV.
 
-![The page after reading a synthetic one-month statement: money in and out, opening and closing balance, charges, Fuliza, and two checks that pass](docs/screenshot.png)
+<table>
+  <tr>
+    <td align="center" width="33%"><h3>1</h3><b>Add a statement</b><br><sub>Drop in one or more PDFs, with the password if the file is locked, or press "Try a sample statement"</sub></td>
+    <td align="center" width="33%"><h3>2</h3><b>See it checked</b><br><sub>Every balance against the one before, and the totals against the statement's own summary</sub></td>
+    <td align="center" width="33%"><h3>3</h3><b>Take the workbook</b><br><sub>A formatted Excel workbook with live formulas, or a CSV, and questions answered on the page</sub></td>
+  </tr>
+</table>
 
-*A synthetic statement made by the tests. The name and every number in it are invented.*
+> [!NOTE]
+> The statement is read inside the page and never sent anywhere. A content security policy stops the page reaching any
+> other server, and the tests record every request it makes to prove it. See [Private by design](#private-by-design).
 
 ## What you get
 
@@ -26,6 +56,13 @@ Add one or more statements, on a computer or a phone. The page lists every trans
 - **On the page**, the transaction list can be narrowed to money in or money out, to the rows that don't reconcile, by type, or by a search, and it shows the money in and out of whatever is listed. Each type in the By type table opens its own transactions, and a warning about rows that don't reconcile has a link that lists them.
 - **A CSV** of the transactions, marked as UTF-8 so Excel reads it correctly.
 - **Ask about your statement.** Questions to click, a person or a kind of transaction to choose, or a question to type: where the money went, who you paid and who paid you the most, charges and fees, Fuliza, the biggest payments, the month you spent the most, the lowest balance, whether every balance adds up, and what went to or came from any one name. It also looks up particular transactions: by a name, a phone, till, paybill or account number (a full phone number is matched to the masked number the statement prints, such as 0712***678), a receipt code, an amount (exact, over, under or between), a date, a range of days or a month, and money in or out, in any combination, such as "payments over 1,000 in March". A lookup lists every row that fits with its totals, and the charges on any payments it lists. Each answer is a calculation on your statement's rows, in your browser, with the transactions behind it listed under it; there is no language model, and a typed question that matches none of these, and fits no row, gets no answer rather than a guess.
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="assets/readme/transactions.webp" alt="The transaction list for the sample statement: date, receipt, details with a type tag, money in, money out and balance"><br><b>Every transaction, typed</b><br><sub>Filter by direction, type or search; the totals follow what is listed.</sub></td>
+    <td width="50%" valign="top"><img src="assets/readme/ask.webp" alt="An answer to 'who did I pay the most' on the sample statement: the top payee, the top ten with their numbers and totals, and a link to show those rows"><br><b>Ask about your statement</b><br><sub>"Who did I pay the most?", answered by calculation from the rows, with the transactions behind it.</sub></td>
+  </tr>
+</table>
 
 ## Private by design
 
@@ -66,10 +103,6 @@ Scanned or photographed statements have no text layer and cannot be read; the pa
 - The parser reads the statement's layout: the column headings (Receipt No., Completion Time, Details, Transaction Status, Paid In, Withdrawn, Balance) and where each value sits on the page. It takes the edges of the Details column from the rows themselves, so a heading may sit anywhere over its column. If Safaricom changes the layout more than that, the parser will need an update. The balance check makes a misread visible rather than silent.
 - The types come from the wording of the Details column. New transaction descriptions fall into "Other money in" or "Other money out" until a rule is added in `lib/parser.js`.
 - The tests run on synthetic statements, which copy the structure of a real statement but cannot cover every variation.
-
-## The site's navigation
-
-The top bar, side bar and phone bar are the same as on every other page of https://maidenpeter.github.io. They are written by `tools/kenya_nav.py` in the site's repository: the markup into `index.html` between the `mp-nav` markers, and the CSS and script into `lib/nav.css` and `lib/nav.js` (as files, since the content security policy allows no inline CSS or script). Change the navigation there and run that script again, rather than editing these files.
 
 ## Run it locally
 
@@ -117,6 +150,34 @@ GitHub Actions runs all of them on every push.
 
 To try the page on a real statement of your own, put it in `tests/private/`. That folder is ignored by git, as are all PDFs, workbooks and CSVs outside the synthetic fixtures.
 
+## The site's navigation
+
+The top bar, side bar and phone bar are the same as on every other page of https://maidenpeter.github.io. They are written by `tools/kenya_nav.py` in the site's repository: the markup into `index.html` between the `mp-nav` markers, and the CSS and script into `lib/nav.css` and `lib/nav.js` (as files, since the content security policy allows no inline CSS or script). Change the navigation there and run that script again, rather than editing these files.
+
 ## Third-party code
 
 PDF.js 3.11.174 (Apache-2.0) and ExcelJS 4.4.0 (MIT) are kept in `lib/` byte for byte as published. The page uses the look of https://maidenpeter.github.io, so the site's typefaces (EB Garamond, IBM Plex Sans Condensed, IM Fell English, IM Fell English SC, Pinyon Script and Old Standard TT, all under the SIL Open Font License) are kept in `fonts/`. Versions, licenses and SHA-256 hashes are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and the license texts are in `LICENSES/`.
+
+The pictures in this README are in `assets/readme/`; `docs/screenshot.png` is the page as the site's card shows it.
+
+## Why I built this
+
+A lot of my work starts with figures locked in PDFs: the regulator's releases, insurers' annual reports. An M-Pesa
+statement is the same problem at a personal scale. It holds every transaction, but as a PDF it can be read and not
+much else: not added up, filtered or checked.
+
+A statement is also private, so the rules came first. It is read in the browser and sent nowhere, and the tests prove
+that by recording every request the page makes rather than asking anyone to take it on trust. Every figure is checked
+against the statement itself, the balance row by row and the totals against the statement's own summary, so a misread
+shows up as a failed check instead of a wrong number nobody notices.
+
+It is the first analysis in the M-Pesa series on my site, and it is built the way the rest of my work is: check the
+data before believing it, then make the result easy to use.
+
+---
+
+<p align="center">
+  <sub>Part of a portfolio at <a href="https://maidenpeter.github.io/">maidenpeter.github.io</a>, alongside the
+  <a href="https://maidenpeter.github.io/kenya-insurance/">Kenya insurance series</a> and
+  <a href="https://kenya-reserve-check.streamlit.app/">Kenya Reserve Check</a>.</sub>
+</p>
