@@ -12,6 +12,7 @@ Add one or more statements, on a computer or a phone. The page lists every trans
 
 ## What you get
 
+- **A sample to try first.** "Try a sample statement" loads one of the synthetic statements the tests use (an invented customer, 61 transactions with charges and Fuliza), fetched from this site and read exactly as your own would be, so you can see the workbook and ask it questions before adding a real statement.
 - **Every transaction**, oldest first: completion time, receipt number, details, status, paid in, withdrawn and balance.
 - **A type for each row**, read from the details: send money, received money, paybill, buy goods, agent withdrawal and deposit, airtime and bundles, transaction charges, Fuliza drawn, Fuliza repaid and Fuliza fees, M-Shwari, business payments in, reversals and a few more. Anything it does not recognise is kept as "Other money in" or "Other money out".
 - **The counterparty**: the name, the phone, till or paybill number, and the account number for paybill payments.

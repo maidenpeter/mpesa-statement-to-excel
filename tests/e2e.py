@@ -544,6 +544,18 @@ def run(browser, base, readme_shot, devices):
         check_csv(name, cn, cb, e["summary"])
         s.close()
 
+    # the sample button: the synthetic statement it fetches from this site gives the same figures as adding the file
+    sample = "fuliza.pdf"
+    check(f"tests/fixtures/synthetic/{sample}" in (ROOT / "lib" / "app.js").read_text(encoding="utf-8"), "sample: app.js fetches " + sample)
+    s = Session(browser, base)
+    sessions.append(s)
+    s.page.click("#sampleBtn")
+    s.page.wait_for_function("() => document.querySelectorAll('#files .file').length === 1 && !document.querySelector('#files .spin')", timeout=60000)
+    msgs = s.file_messages()
+    check(msgs[0][0] == "file " and msgs[0][1].startswith(f"{EXPECT['statements'][sample]['summary']['count']:,} transactions"), f"sample: file line '{msgs[0][1]}'")
+    check_results(s, "sample button", EXPECT["statements"][sample]["summary"])
+    s.close()
+
     # two overlapping statements together
     m = EXPECT["merges"]["overlap"]
     s = Session(browser, base)

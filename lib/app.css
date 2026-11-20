@@ -79,6 +79,8 @@ h3{font-family:var(--serif);font-weight:500;font-size:21px;line-height:1.15;marg
 .d-touch{display:none}
 @media (hover:none) and (pointer:coarse){.d-desk{display:none}.d-touch{display:inline}.drop{min-height:180px}}
 .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;margin-top:18px}
+.sample{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:14px 0 0;color:var(--ink-2);font-size:15px}
+.sample span{flex:1 1 260px;max-width:62ch}
 .field{display:flex;flex-direction:column;gap:6px;flex:1 1 280px;min-width:0}
 .field label{font-weight:600;font-size:15px}
 .field small{color:var(--muted);font-size:14px}
